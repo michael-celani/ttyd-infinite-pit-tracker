@@ -1,0 +1,104 @@
+@font-face {
+    font-family: "Pop Happiness";
+    src: local("FOT-PopHappiness Std EB"), url("./PopHappiness.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Pop Fun";
+    src: local("PopJoyStd-B"), url("./PopJoy.otf") format("opentype");
+}
+
+body {
+    margin: auto;
+    color: white;
+    font-weight: 900;
+    font-family: "Pop Happiness", sans-serif;
+    font-size: 24px;
+    letter-spacing: -3px;
+    text-shadow: 1px 2px 0px black;
+    -webkit-text-stroke: 1.5px black;
+}
+
+.spread {
+    font-family: "Pop Fun", sans-serif;
+    letter-spacing: 0px;
+    color: black;
+    text-shadow: 0px 0px 0px black;
+    -webkit-text-stroke: 0px black;
+    text-align: center;
+    font-weight: 500;
+}
+
+table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+    table td {
+        white-space: nowrap;
+        position: relative;
+    }
+
+        table td a {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            text-align: right;
+        }
+
+.levelcount {
+    transform: translate(.5em, 0%);
+}
+
+#level {
+    transform: translate(.3em, 0%);
+}
+
+#coins {
+    transform: translate(.3em, 0%);
+}
+
+#starpoints {
+    transform: translate(.3em, 0%);
+}
+
+.wrapper {
+    position: relative;
+    height: 3em;
+}
+
+    .wrapper .info_img {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        height: 2em;
+        z-index: -500;
+    }
+
+    .wrapper .party_member {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        height: 2.5em;
+        z-index: -500;
+    }
+
+    .wrapper .shine1 {
+        position: relative;
+        top: 70%;
+        left: 50%;
+        transform: translate(-100%, -0%);
+        height: 1em;
+        filter: drop-shadow(1px 1px 1px black);
+    }
+
+    .wrapper .shine2 {
+        position: relative;
+        top: 70%;
+        left: 50%;
+        transform: translate(-100%, -0%);
+        height: 1em;
+        filter: drop-shadow(1px 1px 1px black);
+    }

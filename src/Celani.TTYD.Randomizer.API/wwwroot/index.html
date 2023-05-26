@@ -1,0 +1,52 @@
+
+<!doctype html>
+<html>
+<head>
+    <title>TTYD Tracker</title>
+    <script src="./tracker.js" defer></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="tracker">
+        <table>
+            <tr>
+                <td><div class="wrapper"><img class="info_img" src="./resources/star.png"><a id="level">0</a></img></div></td>
+                <td><div class="wrapper"><img class="info_img" src="./resources/starpoints.png" /><a id="starpoints">0</a></div></td>
+                <td><div class="wrapper"><img class="info_img" src="./resources/coins.png" /><a id="coins">0</a></div></td>
+                <td><div class="wrapper"><img class="info_img" src="./resources/hplevel.png" /><a class="levelcount" id="basemaxhp">0</a></div></td>
+                <td><div class="wrapper"><img class="info_img" src="./resources/fplevel.png" /><a class="levelcount" id="basemaxfp">0</a></div></td>
+                <td><div class="wrapper"><img class="info_img" src="./resources/bplevel.png" /><a class="levelcount" id="totalbp">0</a></div></td>
+                <td><div class="wrapper"><img class="info_img" id="jumplevel" src="./resources/boots_1.png" /></div></td>
+                <td><div class="wrapper"><img class="info_img" id="hammerlevel" src="./resources/hammer_1.png" /></div></td>
+            </tr>
+            <tr>
+                <td><div class="wrapper" id="mario"><img class="party_member" src="./resources/mario.png" /></div></td>
+                <td><div class="wrapper" id="goombella"><img class="party_member" src="./resources/goombella.png" /><img class="shine1" src="./resources/shine.png" /><img class="shine2" src="./resources/shine.png" /></div></td>
+                <td><div class="wrapper" id="koops"><img class="party_member" src="./resources/koops.png" /><img class="shine1" src="./resources/shine.png" /><img class="shine2" src="./resources/shine.png" /></div></td>
+                <td><div class="wrapper" id="flurrie"><img class="party_member" src="./resources/flurrie.png" /><img class="shine1" src="./resources/shine.png" /><img class="shine2" src="./resources/shine.png" /></div></td>
+                <td><div class="wrapper" id="yoshi"><img class="party_member" src="./resources/yoshi_green.png" /><img class="shine1" src="./resources/shine.png" /><img class="shine2" src="./resources/shine.png" /></div></td>
+                <td><div class="wrapper" id="vivian"><img class="party_member" src="./resources/vivian.png" /><img class="shine1" src="./resources/shine.png" /><img class="shine2" src="./resources/shine.png" /></div></td>
+                <td><div class="wrapper" id="bobbery"><img class="party_member" src="./resources/bobbery.png" /><img class="shine1" src="./resources/shine.png" /><img class="shine2" src="./resources/shine.png" /></div></td>
+                <td><div class="wrapper" id="msmowz"><img class="party_member" src="./resources/msmowz.png" /><img class="shine1" src="./resources/shine.png" /><img class="shine2" src="./resources/shine.png" /></div></td>
+            </tr>
+            <tr>
+                <td><div class="wrapper" id="sweettreat"><img class="info_img" src="./resources/sp_sweettreat.png" /><a class="levelcount">0</a></div></td>
+                <td><div class="wrapper" id="earthtremor"><img class="info_img" src="./resources/sp_earthtremor.png" /><a class="levelcount">0</a></div></td>
+                <td><div class="wrapper" id="clockout"><img class="info_img" src="./resources/sp_clockout.png" /><a class="levelcount">0</a></div></td>
+                <td><div class="wrapper" id="powerlift"><img class="info_img"src="./resources/sp_powerlift.png" /><a class="levelcount">0</a></div></td>
+                <td><div class="wrapper" id="artattack"><img class="info_img" src="./resources/sp_artattack.png" /><a class="levelcount">0</a></div></td>
+                <td><div class="wrapper" id="sweetfeast"><img class="info_img" src="./resources/sp_sweetfeast.png" /><a class="levelcount">0</a></div></td>
+                <td><div class="wrapper" id="showstopper"><img class="info_img" src="./resources/sp_showstopper.png" /><a class="levelcount">0</a></div></td>
+                <td><div class="wrapper" id="supernova"><img class="info_img" src="./resources/sp_supernova.png" /><a class="levelcount">0</a></div></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td id="timer" class="spread">Timer</td>
+                <td id="seed" class="spread">Code</td>
+                <td id="floor" class="spread">Floor</td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>
