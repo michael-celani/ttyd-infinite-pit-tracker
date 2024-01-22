@@ -24,7 +24,7 @@ namespace Celani.TTYD.Randomizer.Tracker
         /// <summary>
         /// The address of the mod state in TTYD memory.
         /// </summary>
-        private static readonly long ModStateAddress = 0x80b56280;
+        private static readonly long ModStateAddress = 0x80b56aa0;
 
         /// <summary>
         /// The address of the Frame Retrace.
@@ -79,7 +79,7 @@ namespace Celani.TTYD.Randomizer.Tracker
             Array.Reverse(PouchData.equipped_badges);
 
             // Read the filename.
-            FileName = Game.ReadString(FileNameAddress, 8);
+            FileName = Game.ReadString(FileNameAddress, 8).Replace('?', '♡');
 
             // Read the ModData.
             byte[] modMemory = Game.Read(ModStateAddress, Marshal.SizeOf<ModData>());
