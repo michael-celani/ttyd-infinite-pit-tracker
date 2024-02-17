@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,7 +63,7 @@ namespace Celani.TTYD.Randomizer.UI.Controllers
             }
         }
 
-        private static byte[] GetData(ThousandYearDoorTracker tracker, PitRun run)
+        private static void GetData(ThousandYearDoorTracker tracker, PitRun run, MemoryStream stream)
         {
             // Get values;
             tracker.Update();
@@ -109,24 +109,26 @@ namespace Celani.TTYD.Randomizer.UI.Controllers
             };
 
             // Send the data.
-            string data = JsonSerializer.Serialize(sentData);
-            byte[] send = Encoding.UTF8.GetBytes(data);
-            return send;
+            JsonSerializer.Serialize(stream, sentData);
         }
 
         private static async Task SendPouchDataAsync(ThousandYearDoorTracker tracker, WebSocket webSocket, PitRun run)
         {
+            MemoryStream stream = new();
+
             while (webSocket.State == WebSocketState.Open)
             {
                 // Wait 1/60th of a second
                 Task timeTask = Task.Delay(WaitTime);
 
-                byte[] data = GetData(tracker, run);
+                GetData(tracker, run, stream);
 
-                if (data != null)
+                if (stream.Position != 0)
                 {
-                    await webSocket.SendAsync(data, WebSocketMessageType.Text, true, CancellationToken.None).ConfigureAwait(false);
+                    await webSocket.SendAsync(stream.GetBuffer()[0..(Index) stream.Position], WebSocketMessageType.Text, true, CancellationToken.None).ConfigureAwait(false);
                 }
+                
+                stream.Seek(0, SeekOrigin.Begin);
                 
                 await timeTask.ConfigureAwait(false);
             }
