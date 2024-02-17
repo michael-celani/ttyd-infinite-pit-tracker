@@ -12,5 +12,7 @@ namespace Celani.TTYD.Randomizer.API
         public string PitRunStart { get; set; }
 
         public string PitRunElapsed { get; set; }
+
+        public string FloorRunElapsed { get; set; }
     }
 }

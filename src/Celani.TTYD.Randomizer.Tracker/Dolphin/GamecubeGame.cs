@@ -64,21 +64,12 @@ namespace Celani.TTYD.Randomizer.Tracker.Dolphin
             return new GamecubeGame(dolphin, mem1.Value);
         }
 
-        public byte[] Read(long gcAddress, int numBytes)
+        public void Read(long gcAddress, byte[] buffer)
         {
-            byte[] buffer = new byte[numBytes];
             nint procAddr = ConvertToProcessAddress(gcAddress);
 
             // Read from the game:
             NativeWrapper.ReadProcessMemoryArray(Game.Handle, procAddr, buffer);
-
-            return buffer;
-        }
-
-        public string ReadString(long gcAddress, int numChars)
-        {
-            Span<byte> bytes = Read(gcAddress, numChars);
-            return Encoding.ASCII.GetString(bytes);
         }
 
         /// <summary>

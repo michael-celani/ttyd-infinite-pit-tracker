@@ -1,64 +1,121 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 
 namespace Celani.TTYD.Randomizer.Tracker
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct PouchData
     {
-        [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.I2, SizeConst = 200)]
-        public short[] equipped_badges;
+        private Badges equipped_badges;
+        private Badges badges;
+        private StoredItems stored_items;
+        private Items items;
+        private KeyItems key_items;
+        private short power_bounce_record;
+        private short shine_sprites;
+        private short star_pieces;
+        private byte hammer_level;
+        private byte jump_level;
+        private short star_points;
+        private short total_bp;
+        private short unallocated_bp;
+        private short base_max_fp;
+        private short base_max_hp;
+        private ushort star_powers_obtained; // bitfield
+        private short level;
+        private short rank;
+        private float audience_level;
+        private UnknownBuffer unk_07e;
+        private short max_sp;
+        private short current_sp;
+        private short coins;
+        private short max_fp;
+        private short current_fp;
+        private short max_hp;
+        private short current_hp;
+        private PouchPartyData party_data;
 
-        [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.I2, SizeConst = 200)]
-        public short[] badges;
+        [JsonPropertyName("coins")]
+        public readonly short Coins => coins;
 
-        [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.I2, SizeConst = 32)]
-        public short[] stored_items;
+        [JsonPropertyName("star_points")]
+        public readonly short StarPoints => star_points;
 
-        [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.I2, SizeConst = 20)]
-        public short[] items;
+        [JsonPropertyName("level")]
+        public readonly short Level => level;
 
-        [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.I2, SizeConst = 121)]
-        public short[] key_items;
+        [JsonPropertyName("base_max_hp")]
+        public readonly short BaseMaxHp => base_max_hp;
 
-        public short power_bounce_record;
-        public short shine_sprites;
-        public short star_pieces;
-        public byte hammer_level;
-        public byte jump_level;
-        public short star_points;
-        public short total_bp;
-        public short unallocated_bp;
-        public short base_max_fp;
-        public short base_max_hp;
-        public ushort star_powers_obtained; // bitfield
-        public short level;
-        public short rank;
-        public float audience_level;
+        [JsonPropertyName("base_max_fp")]
+        public readonly short BaseMaxFp => base_max_fp;
 
-        [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.I1, SizeConst = 6)]
-        public byte[] unk_07e;
+        [JsonPropertyName("total_bp")]
+        public readonly short TotalBp => total_bp;
 
-        public short max_sp;
-        public short current_sp;
-        public short coins;
-        public short max_fp;
-        public short current_fp;
-        public short max_hp;
-        public short current_hp;
+        [JsonPropertyName("jump_level")]
+        public readonly short JumpLevel => jump_level;
 
-        [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.Struct, SizeConst = 8)]
-        public PouchPartyData[] party_data;
+        [JsonPropertyName("hammer_level")]
+        public readonly short HammerLevel => hammer_level;
+
+        [JsonPropertyName("party_data")]
+        public readonly ImmutableArray<PouchPartyMember> PartyData => party_data[0..8].ToImmutableArray();
     }
 
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [InlineArray(200)]
+    public struct Badges
+    {
+        public short value;
+    }
+
+    [InlineArray(32)]
+    public struct StoredItems
+    {
+        public short value;
+    }
+
+    [InlineArray(20)]
+    public struct Items
+    {
+        public short value;
+    }
+
+    [InlineArray(121)]
+    public struct KeyItems
+    {
+        public short value;
+    }
+
+    [InlineArray(6)]
+    public struct UnknownBuffer
+    {
+        public byte value;
+    }
+
+    [InlineArray(8)]
     public struct PouchPartyData
     {
-        public short tech_level;
-        public short attack_level;
-        public short hp_level;
-        public short current_hp;
-        public short base_max_hp;
-        public short max_hp;
-        public ushort flags;
+        public PouchPartyMember value;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 14)]
+    public struct PouchPartyMember
+    {
+        private short tech_level;
+        private short attack_level;
+        private short hp_level;
+        private short current_hp;
+        private short base_max_hp;
+        private short max_hp;
+        private ushort flags;
+
+        [JsonPropertyName("flags")]
+        public readonly ushort Flags => flags;
+
+        [JsonPropertyName("tech_level")]
+        public readonly short TechLevel => tech_level;
     }
 }

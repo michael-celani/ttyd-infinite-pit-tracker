@@ -3,7 +3,6 @@ using Celani.TTYD.Randomizer.Tracker;
 using Celani.TTYD.Randomizer.Tracker.Dolphin;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using System;
 using System.Diagnostics;
@@ -18,27 +17,23 @@ namespace Celani.TTYD.Randomizer.UI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class ThousandYearDoorController : ControllerBase
+    public class ThousandYearDoorController() : ControllerBase
     {
-        /// <summary>
-        /// A Logger.
-        /// </summary>
-        private ILogger<ThousandYearDoorController> Logger { get; set; }
+        private static readonly TimeSpan WaitTime = TimeSpan.FromMilliseconds(100.0 / 6.0);
 
-        public ThousandYearDoorController(ILogger<ThousandYearDoorController> logger)
-        {
-            Logger = logger;
-        }
+        private static readonly TimeSpan HeartbeatPeriod = TimeSpan.FromSeconds(5);
 
         [Route("/pouch")]
         public async Task GetPouch()
         {
+            /*
             if (!ValidateOrigin(HttpContext.Request.Headers.Origin))
             {
                 HttpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return;
             }
-
+            */
+            
             if (!HttpContext.WebSockets.IsWebSocketRequest)
             {
                 HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -54,7 +49,8 @@ namespace Celani.TTYD.Randomizer.UI.Controllers
             // Accept the websocket.
             using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
 
-            Task sendTask = SendPouchDataAsync(tracker, webSocket);
+            var run = new PitRun();
+            Task sendTask = SendPouchDataAsync(tracker, webSocket, run);
             Task heartbeatTask = RecieveHeartbeatAsync(webSocket);
 
             try
@@ -67,64 +63,71 @@ namespace Celani.TTYD.Randomizer.UI.Controllers
             }
         }
 
-        private static async Task SendPouchDataAsync(ThousandYearDoorTracker tracker, WebSocket webSocket)
+        private static byte[] GetData(ThousandYearDoorTracker tracker, PitRun run)
         {
-            var waitTime = TimeSpan.FromMilliseconds(100.0 / 6.0);
+            // Get values;
+            tracker.Update();
+            ref var pouchData = ref tracker.GetPouchData();
+            ref var modData   = ref tracker.GetModData();
 
-            var serializerOptions = new JsonSerializerOptions { 
-                IncludeFields = true,
+            DateTime runStart = GamecubeGame.DateTimeFromGCNTick(modData.PitStartTime);
+            DateTime now = GamecubeGame.DateTimeFromGCNTick(tracker.Tick);
+            TimeSpan runElapsed = now - runStart;
+
+            if (!run.IsStarted && modData.PitStartTime != 0)
+            {
+                // The pit is not started, but just began.
+                run.IsStarted = true;
+                run.CurrentFloor = modData.Floor;
+                run.CurrentFloorStart = GamecubeGame.DateTimeFromGCNTick(tracker.Tick);
+            }
+            else if (run.IsStarted && modData.PitStartTime == 0)
+            {
+                // The pit was started, but just ended.
+                run.IsStarted = false;
+                run.CurrentFloor = 0;
+                run.CurrentFloorStart = null;
+            }
+
+            TimeSpan floorElapsed = run.CurrentFloorStart.HasValue ? now - run.CurrentFloorStart.Value : TimeSpan.Zero;
+
+            if (modData.Floor != run.CurrentFloor)
+            {
+                // The floor has changed.
+                run.CurrentFloor = modData.Floor;
+                run.CurrentFloorStart = now;
+            }
+
+            var sentData = new SentData
+            {
+                FileName = tracker.FileName,
+                PouchData = pouchData,
+                ModData = modData,
+                PitRunStart = runStart.ToString("R"),
+                PitRunElapsed = runElapsed.ToString(@"hh\:mm\:ss\.ff"),
+                FloorRunElapsed = floorElapsed.ToString(@"hh\:mm\:ss\.ff"),
             };
 
-            // Get initial values.
-            tracker.Update();
-            var isStarted = tracker.ModData.pit_start_time != 0;
-            var prevFloor = tracker.ModData.floor;
-            var prevFloorStart = GamecubeGame.DateTimeFromGCNTick(tracker.Tick);
+            // Send the data.
+            string data = JsonSerializer.Serialize(sentData);
+            byte[] send = Encoding.UTF8.GetBytes(data);
+            return send;
+        }
 
+        private static async Task SendPouchDataAsync(ThousandYearDoorTracker tracker, WebSocket webSocket, PitRun run)
+        {
             while (webSocket.State == WebSocketState.Open)
             {
                 // Wait 1/60th of a second
-                Task timeTask = Task.Delay(waitTime);
+                Task timeTask = Task.Delay(WaitTime);
 
-                tracker.Update();
+                byte[] data = GetData(tracker, run);
 
-                DateTime runStart = GamecubeGame.DateTimeFromGCNTick(tracker.ModData.pit_start_time);
-                DateTime now = GamecubeGame.DateTimeFromGCNTick(tracker.Tick);
-                TimeSpan runElapsed = now - runStart;
-
-                if (!isStarted && tracker.ModData.pit_start_time != 0)
+                if (data != null)
                 {
-                    prevFloor = tracker.ModData.floor;
-                    prevFloorStart = now;
-                    isStarted = true;
-                    Console.WriteLine($"Run Started: Seed {tracker.FileName}");
+                    await webSocket.SendAsync(data, WebSocketMessageType.Text, true, CancellationToken.None).ConfigureAwait(false);
                 }
-
-                if (tracker.ModData.floor != prevFloor)
-                {
-                    TimeSpan floorElapsed = now - prevFloorStart;
-                    var floorElapsedstr = floorElapsed.ToString(@"hh\:mm\:ss\.ff");
-
-                    Console.WriteLine($"Floor {prevFloor + 1}: {floorElapsedstr}");
-
-                    prevFloorStart = now;
-                    prevFloor = tracker.ModData.floor;
-                }
-
-                var sentData = new SentData
-                {
-                    FileName = tracker.FileName,
-                    PouchData = tracker.PouchData,
-                    ModData = tracker.ModData,
-                    PitRunStart = runStart.ToString("R"),
-                    PitRunElapsed = runElapsed.ToString(@"hh\:mm\:ss\.ff")
-                };
-
-                // Send the data.
-                string data = JsonSerializer.Serialize(sentData, serializerOptions);
-                byte[] send = Encoding.UTF8.GetBytes(data);
-                await webSocket.SendAsync(send, WebSocketMessageType.Text, true, CancellationToken.None).ConfigureAwait(false);
-
+                
                 await timeTask.ConfigureAwait(false);
             }
         }
@@ -132,12 +135,11 @@ namespace Celani.TTYD.Randomizer.UI.Controllers
         private static async Task RecieveHeartbeatAsync(WebSocket webSocket)
         {
             var reciveBuffer = new byte[32000];
-            var timeoutTime = TimeSpan.FromSeconds(5);
 
             while (webSocket.State == WebSocketState.Open)
             {
                 CancellationTokenSource source = new();
-                source.CancelAfter(timeoutTime);
+                source.CancelAfter(HeartbeatPeriod);
 
                 // Receive a heartbeat.
                 var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(reciveBuffer), source.Token).ConfigureAwait(false);
@@ -151,7 +153,7 @@ namespace Celani.TTYD.Randomizer.UI.Controllers
 
         private static bool ValidateOrigin(StringValues origin)
         {
-            if (!origin.Any())
+            if (origin.Count == 0)
             {
                 return false;
             }
@@ -172,7 +174,7 @@ namespace Celani.TTYD.Randomizer.UI.Controllers
             }
 
             // Todo: validate game is TTYD
-            GamecubeGame game = GamecubeGame.Create(dolphinProcess);
+            var game = GamecubeGame.Create(dolphinProcess);
             tracker = new(game);
 
             return true;

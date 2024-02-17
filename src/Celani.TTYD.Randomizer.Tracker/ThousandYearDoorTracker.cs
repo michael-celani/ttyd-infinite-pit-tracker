@@ -4,12 +4,12 @@ using System.Text;
 
 namespace Celani.TTYD.Randomizer.Tracker
 {
-    public class ThousandYearDoorTracker
+    public class ThousandYearDoorTracker(GamecubeGame game)
     {
         /// <summary>
         /// The Gamecube Game.
         /// </summary>
-        private GamecubeGame Game { get; set; }
+        private GamecubeGame Game { get; set; } = game ?? throw new ArgumentNullException(nameof(game));
 
         /// <summary>
         /// The address of the file name.
@@ -32,34 +32,23 @@ namespace Celani.TTYD.Randomizer.Tracker
         private static readonly long FrameRetraceAddress = 0x803dac48;
 
         /// <summary>
-        /// The data in the pouch.
-        /// </summary>
-        public PouchData PouchData { get; set; }
-
-        /// <summary>
-        /// The mod data.
-        /// </summary>
-        public ModData ModData { get; set; }
-
-        /// <summary>
         /// The file name.
         /// </summary>
-        public string FileName { get; set; } = string.Empty;
+        public string FileName { get; private set; } = string.Empty;
 
         /// <summary>
         /// The current tick.
         /// </summary>
-        public ulong Tick { get; set; }
+        public ulong Tick { get; private set; }
 
-        /// <summary>
-        /// Constructs a new Tracker.
-        /// </summary>
-        /// <param name="game">The game.</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public ThousandYearDoorTracker(GamecubeGame game)
-        {
-            Game = game ?? throw new ArgumentNullException(nameof(game));
-        }
+        private readonly byte[] PouchDataBuffer = new byte[Marshal.SizeOf<PouchData>()];
+        private readonly byte[] ModDataBuffer = new byte[Marshal.SizeOf<ModData>()];
+        private readonly byte[] TickBuffer = new byte[8];
+        private readonly byte[] FilenameBuffer = new byte[8];
+
+        public ref PouchData GetPouchData() => ref MemoryMarshal.AsRef<PouchData>(PouchDataBuffer);
+
+        public ref ModData GetModData() => ref MemoryMarshal.AsRef<ModData>(ModDataBuffer);
 
         /// <summary>
         /// Updates the memory.
@@ -67,39 +56,22 @@ namespace Celani.TTYD.Randomizer.Tracker
         public void Update()
         {
             // Read the pouch memory.
-            byte[] pouchMemory = Game.Read(PouchAddress, Marshal.SizeOf<PouchData>());
-            Array.Reverse(pouchMemory);
-            PouchData = PinMemory<PouchData>(pouchMemory);
-
-            Array.Reverse(PouchData.party_data);
-            Array.Reverse(PouchData.key_items);
-            Array.Reverse(PouchData.items);
-            Array.Reverse(PouchData.stored_items);
-            Array.Reverse(PouchData.badges);
-            Array.Reverse(PouchData.equipped_badges);
-
-            // Read the filename.
-            FileName = Game.ReadString(FileNameAddress, 8).Replace('?', '♡');
+            Game.Read(PouchAddress, PouchDataBuffer);
+            PouchDataBuffer.AsSpan().Reverse();
 
             // Read the ModData.
-            byte[] modMemory = Game.Read(ModStateAddress, Marshal.SizeOf<ModData>());
-            Array.Reverse(modMemory);
-            ModData = PinMemory<ModData>(modMemory);
+            Game.Read(ModStateAddress, ModDataBuffer);
+            ModDataBuffer.AsSpan().Reverse();
+
+            // Read the filename.
+            Game.Read(FileNameAddress, FilenameBuffer);
+            FileName = Encoding.ASCII.GetString(FilenameBuffer).Replace('?', '♡');
 
             // Read the tick.
-            byte[] tickMemory = Game.Read(FrameRetraceAddress, 8);
-            Array.Reverse(tickMemory);
-            Tick = BitConverter.ToUInt64(tickMemory);
-        }
+            Game.Read(FrameRetraceAddress, TickBuffer);
+            TickBuffer.AsSpan().Reverse();
 
-        private static T PinMemory<T>(byte[] memory)
-        {
-            GCHandle handle = GCHandle.Alloc(memory, GCHandleType.Pinned);
-            T data = Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());
-            handle.Free();
-
-            return data;
-
+            Tick = BitConverter.ToUInt64(TickBuffer);
         }
     }
 }

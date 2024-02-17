@@ -1,4 +1,9 @@
 @font-face {
+    font-family: "Mario Party Hudson";
+    src: local("Mario Party Hudson"), url("Mario-Party-Hudson-Font.ttf") format("truetype");
+}
+
+@font-face {
     font-family: "Pop Happiness";
     src: local("FOT-PopHappiness Std EB"), url("./PopHappiness.ttf") format("truetype");
 }
@@ -11,11 +16,10 @@
 body {
     margin: auto;
     color: white;
-    font-weight: 900;
-    font-family: "Pop Happiness", sans-serif;
+    font-family: "Mario Party Hudson", sans-serif;
     font-size: 24px;
-    letter-spacing: -3px;
-    text-shadow: 1px 2px 0px black;
+    letter-spacing: -2px;
+    text-shadow: 1px 2px 1px black;
     -webkit-text-stroke: 1.5px black;
 }
 
@@ -27,6 +31,7 @@ body {
     -webkit-text-stroke: 0px black;
     text-align: center;
     font-weight: 500;
+    text-shadow: 1px 2px 1px rgba(0, 0, 0, 0.25);
 }
 
 table {
@@ -47,19 +52,56 @@ table {
         }
 
 .levelcount {
-    transform: translate(.5em, 0%);
+    transform: translate(.5em, .5em);
 }
 
 #level {
-    transform: translate(.3em, 0%);
+    transform: translate(.2em, 0%);
 }
 
 #coins {
-    transform: translate(.3em, 0%);
+    transform: translate(.2em, 0%);
 }
 
 #starpoints {
-    transform: translate(.3em, 0%);
+    transform: translate(.2em, 0%);
+}
+
+
+#ran_away {
+    transform: translate(.4em, 0%);
+}
+
+#conditions {
+    transform: translate(.4em, 0%);
+}
+
+#total_coins {
+    transform: translate(.4em, 0em);
+}
+
+#total_items {
+    transform: translate(.4em, 0em);
+}
+
+#fp_used {
+    transform: translate(.4em, 0em);
+}
+
+#sp_used {
+    transform: translate(.4em, 0em);
+}
+
+#superguards {
+    transform: translate(.4em, 0%);
+}
+
+#player_damage {
+    transform: translate(.4em, 0%);
+}
+
+#enemy_damage {
+    transform: translate(.4em, 0%);
 }
 
 .wrapper {
@@ -87,7 +129,7 @@ table {
 
     .wrapper .shine1 {
         position: relative;
-        top: 70%;
+        top: 85%;
         left: 50%;
         transform: translate(-100%, -0%);
         height: 1em;
@@ -96,7 +138,7 @@ table {
 
     .wrapper .shine2 {
         position: relative;
-        top: 70%;
+        top: 85%;
         left: 50%;
         transform: translate(-100%, -0%);
         height: 1em;

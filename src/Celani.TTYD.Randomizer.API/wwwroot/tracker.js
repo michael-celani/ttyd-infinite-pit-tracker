@@ -15,17 +15,17 @@ function init() {
         document.getElementById("jumplevel").src = "./resources/boots_" + msg.PouchData.jump_level + ".png";
         document.getElementById("hammerlevel").src = "./resources/hammer_" + msg.PouchData.hammer_level + ".png";
 
-        update_party(document.getElementById("goombella"), msg.PouchData.party_data[1]);
-        update_party(document.getElementById("koops"), msg.PouchData.party_data[2]);
-        update_party(document.getElementById("flurrie"), msg.PouchData.party_data[5]);
-        update_party(document.getElementById("yoshi"), msg.PouchData.party_data[4]);
-        update_party(document.getElementById("vivian"), msg.PouchData.party_data[6]);
-        update_party(document.getElementById("bobbery"), msg.PouchData.party_data[3]);
-        update_party(document.getElementById("msmowz"), msg.PouchData.party_data[7]);
+        update_party(document.getElementById("goombella"), msg.PouchData.party_data[6]);
+        update_party(document.getElementById("koops"), msg.PouchData.party_data[5]);
+        update_party(document.getElementById("flurrie"), msg.PouchData.party_data[2]);
+        update_party(document.getElementById("yoshi"), msg.PouchData.party_data[3]);
+        update_party(document.getElementById("vivian"), msg.PouchData.party_data[1]);
+        update_party(document.getElementById("bobbery"), msg.PouchData.party_data[4]);
+        update_party(document.getElementById("msmowz"), msg.PouchData.party_data[0]);
 
         // Update Yoshi color:
         let yoshi = document.getElementById("yoshi").querySelector(".party_member");
-        let yoshi_color = (msg.PouchData.party_data[4].flags & 0xF000) >> 12;
+        let yoshi_color = (msg.PouchData.party_data[3].flags & 0xF000) >> 12;
 
         switch (yoshi_color) {
             case 0:
@@ -62,12 +62,21 @@ function init() {
         update_star_power(document.getElementById("sweetfeast"), msg.ModData.star_power_levels >> 10 & 3);
         update_star_power(document.getElementById("showstopper"), msg.ModData.star_power_levels >> 12 & 3);
         update_star_power(document.getElementById("supernova"), msg.ModData.star_power_levels >> 14 & 3);
-
-        document.getElementById("floor").innerHTML = "Floor " + parseInt(msg.ModData.floor + 1, 10);
-        document.getElementById("seed").innerHTML = msg.FileName ? msg.FileName : "Seed";
+        
+        document.getElementById("seed").innerHTML = msg.FileName ? (msg.FileName == "" ? "Seed" : msg.FileName) : "Seed";
         document.getElementById("timer").innerHTML = msg.ModData.pit_start_time != 0 ? msg.PitRunElapsed : "00:00:00.00";
 
-        
+        document.getElementById("floor").innerHTML = "Floor " + parseInt(msg.ModData.floor + 1, 10);
+        document.getElementById("floor_timer").innerHTML = msg.ModData.pit_start_time != 0 ? msg.FloorRunElapsed : "00:00:00.00";
+
+        document.getElementById("fp_used").innerHTML = msg.ModData.FlowerPointsSpent;
+        document.getElementById("sp_used").innerHTML = msg.ModData.StarPointsSpent;
+        document.getElementById("total_coins").innerHTML = msg.ModData.CoinsEarned;
+        document.getElementById("total_items").innerHTML = msg.ModData.ItemsUsed;
+        document.getElementById("conditions").innerHTML = msg.ModData.ConditionsMet;
+        document.getElementById("superguards").innerHTML = msg.ModData.Superguards;
+        document.getElementById("enemy_damage").innerHTML = msg.ModData.EnemyDamage;
+        document.getElementById("player_damage").innerHTML = msg.ModData.PlayerDamage;
     }
 
     function update_party(party_member, party_data) {
