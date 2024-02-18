@@ -2,9 +2,9 @@
 
 namespace Celani.TTYD.Randomizer.Tracker.Windows
 {
-    internal static class NativeFunctions
+    internal static partial class NativeFunctions
     {
-        [DllImport("kernel32.dll")]
-        internal static extern int VirtualQueryEx(nint hProcess, nint lpAddress, out MemoryBasicInformation lpBuffer, uint dwLength);
+        [LibraryImport("kernel32.dll")]
+        internal static partial int VirtualQueryEx(nint hProcess, nint lpAddress, out MemoryBasicInformation lpBuffer, uint dwLength);
     }
 }

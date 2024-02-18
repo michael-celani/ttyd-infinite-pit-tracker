@@ -1,83 +1,264 @@
-﻿using System.Collections.Immutable;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 
 namespace Celani.TTYD.Randomizer.Tracker
 {
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct ModData
+    /// <summary>
+    /// Represents additional data kept by Infinite Pit.
+    /// </summary>
+    public class InfinitePit
     {
-        private PlayStats play_stats;
-        private OptionBytes option_bytes;
-        private OptionFlags option_flags;
-        private ulong last_save_time;
-        private ulong pit_start_time;
-        private RandomNumberGenerationSequences rng_sequences;
-        private uint filename_seed;
-        private PaddingBuffer padding;
-        private ushort star_power_levels;
-        private uint reward_flags;
-        private int floor;
-        private PartnerUpgrades partner_upgrades;
-        private byte version;
+        public byte[] Data { get; } = new byte[Marshal.SizeOf<ModData>()];
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private ref ModData GetModData() => ref MemoryMarshal.AsRef<ModData>(Data);
 
         [JsonPropertyName("floor")]
-        public int Floor => floor;
+        public int Floor
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return modData.floor;
+            }
+        }
 
         [JsonPropertyName("star_power_levels")]
-        public ushort StarPowerLevels => star_power_levels;
+        public ushort StarPowerLevels
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return modData.star_power_levels;
+            }
+        }
 
         [JsonPropertyName("pit_start_time")]
-        public ulong PitStartTime => pit_start_time;
+        public ulong PitStartTime
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return modData.pit_start_time;
+            }
+        }
 
-        public readonly uint TotalTurns => ReadThree(play_stats[61..64]);
+        public uint TotalTurns
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return ReadThree(modData.play_stats[61..64]);
+            }
+        }
 
-        public readonly ushort MaximumTurns => MemoryMarshal.Read<ushort>(play_stats[59..61]);
+        public ushort MaximumTurns
+        { 
+            get
+            {
+                ref var modData = ref GetModData();
+                return MemoryMarshal.Read<ushort>(modData.play_stats[59..61]);
+            }
+        }
 
-        public readonly ushort CurrentTurns => MemoryMarshal.Read<ushort>(play_stats[57..59]);
+        public ushort CurrentTurns
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return MemoryMarshal.Read<ushort>(modData.play_stats[57..59]);
+            }
+        }
 
-        public readonly uint MaximumTurnsFloor => MemoryMarshal.Read<uint>(play_stats[53..57]);
+        public uint MaximumTurnsFloor
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return MemoryMarshal.Read<uint>(modData.play_stats[53..57]);
+            }
+        }
 
-        public readonly ushort TimesRanAway => MemoryMarshal.Read<ushort>(play_stats[51..53]);
+        public ushort TimesRanAway
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return MemoryMarshal.Read<ushort>(modData.play_stats[51..53]);
+            }
+        }
 
-        public readonly uint EnemyDamage => ReadThree(play_stats[48..51]);
+        public uint EnemyDamage
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return ReadThree(modData.play_stats[48..51]);
+            }
+        }
 
-        public readonly uint PlayerDamage => ReadThree(play_stats[45..48]);
+        public uint PlayerDamage
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return ReadThree(modData.play_stats[45..48]);
+            }
+        }
 
-        public readonly uint ItemsUsed => ReadThree(play_stats[42..45]);
+        public uint ItemsUsed
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return ReadThree(modData.play_stats[42..45]);
+            }
+        }
 
-        public readonly uint CoinsEarned => ReadThree(play_stats[39..42]);
+        public uint CoinsEarned
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return ReadThree(modData.play_stats[39..42]);
+            }
+        }
 
-        public readonly uint CoinsSpent => ReadThree(play_stats[36..39]);
+        public uint CoinsSpent
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return ReadThree(modData.play_stats[36..39]);
+            }
+        }
 
-        public readonly uint FlowerPointsSpent => ReadThree(play_stats[33..36]);
+        public uint FlowerPointsSpent
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return ReadThree(modData.play_stats[33..36]);
+            }
+        }
 
-        public readonly uint StarPointsSpent => ReadThree(play_stats[30..33]);
+        public uint StarPointsSpent
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return ReadThree(modData.play_stats[30..33]);
+            }
+        }
 
-        public readonly uint Superguards => ReadThree(play_stats[27..30]);
+        public uint Superguards
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return ReadThree(modData.play_stats[27..30]);
+            }
+        }
 
-        public readonly uint ItemsSold => ReadThree(play_stats[24..27]);
+        public uint ItemsSold
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return ReadThree(modData.play_stats[24..27]);
+            }
+        }
 
-        public readonly uint BadgesSold => ReadThree(play_stats[21..24]);
+        public uint BadgesSold
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return ReadThree(modData.play_stats[21..24]);
+            }
+        }
 
-        public readonly ushort LevelsSold => MemoryMarshal.Read<ushort>(play_stats[19..21]);
+        public ushort LevelsSold
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return MemoryMarshal.Read<ushort>(modData.play_stats[19..21]);
+            }
+        }
 
-        public readonly ushort ShineSprites => MemoryMarshal.Read<ushort>(play_stats[17..19]);
+        public ushort ShineSprites
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return MemoryMarshal.Read<ushort>(modData.play_stats[17..19]);
+            }
+        }
 
-        public readonly uint ConditionsMet => ReadThree(play_stats[14..17]);
+        public uint ConditionsMet
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return ReadThree(modData.play_stats[14..17]);
+            }
+        }
 
-        public readonly uint ConditionsTotal => ReadThree(play_stats[11..14]);
+        public uint ConditionsTotal
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return ReadThree(modData.play_stats[11..14]);
+            }
+        }
 
-        public readonly ushort MoversUsed => MemoryMarshal.Read<ushort>(play_stats[9..11]);
+        public ushort MoversUsed
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return MemoryMarshal.Read<ushort>(modData.play_stats[9..11]);
+            }
+        }
 
-        public readonly uint BattlesSkipped => ReadThree(play_stats[6..9]);
+        public ushort BattlesSkipped
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return MemoryMarshal.Read<ushort>(modData.play_stats[6..9]);
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint ReadThree(ReadOnlySpan<byte> buffer)
         {
             return (uint)(MemoryMarshal.Read<ushort>(buffer[0..2]) | (buffer[2] << 16));
         }
+    }
+
+    /// <summary>
+    /// Represents the Infinite Pit additional data as it is represented in memory.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct ModData
+    {
+        public PlayStats play_stats;
+        public OptionBytes option_bytes;
+        public OptionFlags option_flags;
+        public ulong last_save_time;
+        public ulong pit_start_time;
+        public RandomNumberGenerationSequences rng_sequences;
+        public uint filename_seed;
+        public PaddingBuffer padding;
+        public ushort star_power_levels;
+        public uint reward_flags;
+        public int floor;
+        public PartnerUpgrades partner_upgrades;
+        public byte version;
     }
 
     [InlineArray(64)]
@@ -114,8 +295,5 @@ namespace Celani.TTYD.Randomizer.Tracker
     public struct PartnerUpgrades
     {
         public byte value;
-
-        [JsonPropertyName("value")]
-        public byte Value => value;
     }
 }

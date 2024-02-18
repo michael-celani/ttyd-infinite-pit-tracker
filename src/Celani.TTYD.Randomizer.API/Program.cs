@@ -4,7 +4,9 @@ using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// builder.Services.AddRazorPages();
+if (builder.Environment.IsDevelopment())
+    builder.Services.AddRazorPages();
+
 builder.Services.AddControllers();
 
 var app = builder.Build();
@@ -19,14 +21,18 @@ else
 }
 
 app.UseHttpsRedirection();
-// app.UseStaticFiles();
+
+if (app.Environment.IsDevelopment())
+    app.UseStaticFiles();
 
 app.UseWebSockets();
 
 app.UseRouting();
 app.UseAuthorization();
 
-// app.MapRazorPages();
+if (app.Environment.IsDevelopment())
+    app.MapRazorPages();
+
 app.MapControllers();
 app.MapDefaultControllerRoute();
 

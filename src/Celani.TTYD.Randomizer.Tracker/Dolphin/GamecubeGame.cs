@@ -79,7 +79,6 @@ namespace Celani.TTYD.Randomizer.Tracker.Dolphin
         /// <returns>true if the game code is valid, false otherwise.</returns>
         public static bool ValidateGameCode(ReadOnlySpan<char> code) => GameCodeRegex().IsMatch(code);
 
-        
         /// <summary>
         /// Converts a GCN tick to a DateTime.
         /// </summary>

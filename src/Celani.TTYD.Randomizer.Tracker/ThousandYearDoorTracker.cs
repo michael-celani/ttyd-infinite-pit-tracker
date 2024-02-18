@@ -41,14 +41,19 @@ namespace Celani.TTYD.Randomizer.Tracker
         /// </summary>
         public ulong Tick { get; private set; }
 
-        private readonly byte[] PouchDataBuffer = new byte[Marshal.SizeOf<PouchData>()];
-        private readonly byte[] ModDataBuffer = new byte[Marshal.SizeOf<ModData>()];
-        private readonly byte[] TickBuffer = new byte[8];
-        private readonly byte[] FilenameBuffer = new byte[8];
+        /// <summary>
+        /// The pouch, which represents party data.
+        /// </summary>
+        public Pouch Pouch { get; private set; } = new Pouch();
 
-        public ref PouchData GetPouchData() => ref MemoryMarshal.AsRef<PouchData>(PouchDataBuffer);
+        /// <summary>
+        /// The information about the mod.
+        /// </summary>
+        public InfinitePit ModInfo { get; private set; } = new InfinitePit();
 
-        public ref ModData GetModData() => ref MemoryMarshal.AsRef<ModData>(ModDataBuffer);
+        // Small buffers used for reading small data.
+        private readonly byte[] _smallbuf = new byte[8];
+        private readonly byte[] _tickbuff = new byte[8];
 
         /// <summary>
         /// Updates the memory.
@@ -56,22 +61,27 @@ namespace Celani.TTYD.Randomizer.Tracker
         public void Update()
         {
             // Read the pouch memory.
-            Game.Read(PouchAddress, PouchDataBuffer);
-            PouchDataBuffer.AsSpan().Reverse();
+            Game.Read(PouchAddress, Pouch.Data);
+            Pouch.Data.AsSpan().Reverse();
 
             // Read the ModData.
-            Game.Read(ModStateAddress, ModDataBuffer);
-            ModDataBuffer.AsSpan().Reverse();
-
-            // Read the filename.
-            Game.Read(FileNameAddress, FilenameBuffer);
-            FileName = Encoding.ASCII.GetString(FilenameBuffer).Replace('?', '♡');
+            Game.Read(ModStateAddress, ModInfo.Data);
+            ModInfo.Data.AsSpan().Reverse();
 
             // Read the tick.
-            Game.Read(FrameRetraceAddress, TickBuffer);
-            TickBuffer.AsSpan().Reverse();
+            Game.Read(FrameRetraceAddress, _tickbuff);
+            _tickbuff.AsSpan().Reverse();
+            Tick = BitConverter.ToUInt64(_tickbuff);
+        }
 
-            Tick = BitConverter.ToUInt64(TickBuffer);
+        /// <summary>
+        /// Updates the filename.
+        /// </summary>
+        public void UpdateFilename()
+        {
+            // Read the filename.
+            Game.Read(FileNameAddress, _smallbuf);
+            FileName = Encoding.ASCII.GetString(_smallbuf).Replace('?', '♡');
         }
     }
 }
