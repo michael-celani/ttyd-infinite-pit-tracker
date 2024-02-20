@@ -13,7 +13,13 @@ namespace Celani.TTYD.Randomizer.API.Converters
 
         public override void Write(Utf8JsonWriter writer, TimeSpan value, JsonSerializerOptions options)
         {
-            var val = $@"{(int) value.TotalHours}:{value:mm\:ss\.ff}";
+            if (value.TotalHours >= 100)
+            {
+                writer.WriteStringValue("99:59:59.99");
+                return;
+            }
+
+            var val = $@"{value.TotalHours:00}:{value:mm\:ss\.ff}";
             writer.WriteStringValue(val);
         }
     }
