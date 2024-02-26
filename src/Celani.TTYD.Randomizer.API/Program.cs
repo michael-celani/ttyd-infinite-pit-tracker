@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +26,12 @@ app.UseHttpsRedirection();
 if (app.Environment.IsDevelopment())
     app.UseStaticFiles();
 
-app.UseWebSockets();
+var options = new WebSocketOptions
+{
+    KeepAliveInterval = TimeSpan.FromSeconds(0)
+};
+
+app.UseWebSockets(options);
 
 app.UseRouting();
 app.UseAuthorization();

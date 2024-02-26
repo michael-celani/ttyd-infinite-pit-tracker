@@ -104,6 +104,4 @@ function init() {
             star_power_lvl.innerHTML = level;
         }
     }
-
-    setInterval(function() {webSocket.send("ping")}, 1000)
 }

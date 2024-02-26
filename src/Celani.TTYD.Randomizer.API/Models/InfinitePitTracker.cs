@@ -27,10 +27,7 @@ namespace Celani.TTYD.Randomizer.API.Models
             Run.OnPitFinish += (sender, args) => ShouldWrite = true;
         }
 
-        public async Task TrackAsync(WebSocket socket) => await Task.WhenAny(
-            SendPouchDataAsync(socket), 
-            RecieveHeartbeatAsync(socket)
-        );
+        public async Task TrackAsync(WebSocket socket) => await SendPouchDataAsync(socket);
 
         private static ThousandYearDoorDataReader ConnectDolphin()
         {
@@ -75,25 +72,6 @@ namespace Celani.TTYD.Randomizer.API.Models
                 }
                 
                 await timeTask;
-            }
-        }
-
-        private static async Task RecieveHeartbeatAsync(WebSocket webSocket)
-        {
-            var reciveBuffer = new byte[32000];
-
-            while (webSocket.State == WebSocketState.Open)
-            {
-                using CancellationTokenSource source = new();
-                source.CancelAfter(HeartbeatPeriod);
-
-                // Receive a heartbeat.
-                var result = await webSocket.ReceiveAsync(reciveBuffer.AsMemory(), source.Token);
-
-                if (result.MessageType == WebSocketMessageType.Close)
-                {
-                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
-                }
             }
         }
 

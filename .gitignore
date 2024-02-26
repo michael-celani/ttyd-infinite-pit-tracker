@@ -132,3 +132,6 @@ $RECYCLE.BIN/
 .DS_Store
 
 _NCrunch*
+/src/Celani.TTYD.Randomizer.API/wwwroot/Mario-Party-Hudson-Font.ttf
+/src/Celani.TTYD.Randomizer.API/wwwroot/PopHappiness.ttf
+/src/Celani.TTYD.Randomizer.API/wwwroot/PopJoy.otf
