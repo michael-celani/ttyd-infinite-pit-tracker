@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Celani.TTYD.Randomizer.Tracker.Dolphin;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 
@@ -7,12 +8,21 @@ namespace Celani.TTYD.Randomizer.Tracker
     /// <summary>
     /// Represents additional data kept by Infinite Pit.
     /// </summary>
-    public class InfinitePit
+    public class InfinitePitStats
     {
         public byte[] Data { get; } = new byte[Marshal.SizeOf<ModData>()];
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ref ModData GetModData() => ref MemoryMarshal.AsRef<ModData>(Data);
+        private byte[] TimeData { get; } = new byte[Marshal.SizeOf<FinalTimeData>()];
+
+        /// <summary>
+        /// The address of the mod state in TTYD memory.
+        /// </summary>
+        private const long ModStateAddress = 0x80b56aa0;
+
+        /// <summary>
+        /// The address of the RTA final time.
+        /// </summary>
+        private const long FinalTimeAddress = 0x80b56538;
 
         [JsonPropertyName("floor")]
         public int Floor
@@ -44,6 +54,36 @@ namespace Celani.TTYD.Randomizer.Tracker
             }
         }
 
+        [JsonPropertyName("pit_started")]
+        public bool PitStarted
+        {
+            get
+            {
+                ref var modData = ref GetModData();
+                return modData.pit_start_time != 0;
+            }
+        }
+
+        [JsonPropertyName("pit_finished")]
+        public bool PitFinished
+        {
+            get
+            {
+                ref var timeData = ref GetTimeData();
+                return timeData.pit_finished == 1;
+            }
+        }
+
+        [JsonPropertyName("pit_end_time")]
+        public ulong PitEndTime
+        {
+            get
+            {
+                ref var timeData = ref GetTimeData();
+                return timeData.pit_finished == 1 ? timeData.pit_final_time : 0;
+            }
+        }
+
         public uint TotalTurns
         {
             get
@@ -54,7 +94,7 @@ namespace Celani.TTYD.Randomizer.Tracker
         }
 
         public ushort MaximumTurns
-        { 
+        {
             get
             {
                 ref var modData = ref GetModData();
@@ -234,66 +274,33 @@ namespace Celani.TTYD.Randomizer.Tracker
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private ref ModData GetModData() => ref MemoryMarshal.AsRef<ModData>(Data);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private ref FinalTimeData GetTimeData() => ref MemoryMarshal.AsRef<FinalTimeData>(TimeData);
+
+        public void Read(GamecubeGame game)
+        {
+            // Read the ModData.
+            game.Read(ModStateAddress, Data);
+            Data.AsSpan().Reverse();
+
+            game.Read(FinalTimeAddress, TimeData);
+            TimeData.AsSpan().Reverse();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint ReadThree(ReadOnlySpan<byte> buffer)
         {
             return (uint)(MemoryMarshal.Read<ushort>(buffer[0..2]) | (buffer[2] << 16));
         }
-    }
 
-    /// <summary>
-    /// Represents the Infinite Pit additional data as it is represented in memory.
-    /// </summary>
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct ModData
-    {
-        public PlayStats play_stats;
-        public OptionBytes option_bytes;
-        public OptionFlags option_flags;
-        public ulong last_save_time;
-        public ulong pit_start_time;
-        public RandomNumberGenerationSequences rng_sequences;
-        public uint filename_seed;
-        public PaddingBuffer padding;
-        public ushort star_power_levels;
-        public uint reward_flags;
-        public int floor;
-        public PartnerUpgrades partner_upgrades;
-        public byte version;
-    }
+        public InfinitePitStats() { }
 
-    [InlineArray(64)]
-    public struct PlayStats
-    {
-        public byte value;
-    }
-
-    [InlineArray(32)]
-    public struct OptionBytes
-    {
-        public byte value;
-    }
-
-    [InlineArray(4)]
-    public struct OptionFlags
-    {
-        public uint value;
-    }
-
-    [InlineArray(28)]
-    public struct RandomNumberGenerationSequences
-    {
-        public ushort value;
-    }
-
-    [InlineArray(2)]
-    public struct PaddingBuffer
-    {
-        public byte value;
-    }
-
-    [InlineArray(7)]
-    public struct PartnerUpgrades
-    {
-        public byte value;
+        public InfinitePitStats(InfinitePitStats other) : this()
+        {
+            var dataSpan = Data.AsSpan();
+            other.Data.CopyTo(dataSpan);
+        }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Celani.TTYD.Randomizer.Tracker.Dolphin;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Celani.TTYD.Randomizer.Tracker
@@ -14,22 +13,12 @@ namespace Celani.TTYD.Randomizer.Tracker
         /// <summary>
         /// The address of the file name.
         /// </summary>
-        private static readonly long FileNameAddress = 0x803dbdd4;
-
-        /// <summary>
-        /// The address of the pouch in TTYD memory.
-        /// </summary>
-        private static readonly long PouchAddress = 0x80b07b60;
-
-        /// <summary>
-        /// The address of the mod state in TTYD memory.
-        /// </summary>
-        private static readonly long ModStateAddress = 0x80b56aa0;
+        private const long FileNameAddress = 0x803dbdd4;
 
         /// <summary>
         /// The address of the Frame Retrace.
         /// </summary>
-        private static readonly long FrameRetraceAddress = 0x803dac48;
+        private const long FrameRetraceAddress = 0x803dac48;
 
         /// <summary>
         /// The file name.
@@ -44,12 +33,12 @@ namespace Celani.TTYD.Randomizer.Tracker
         /// <summary>
         /// The pouch, which represents party data.
         /// </summary>
-        public Pouch Pouch { get; private set; } = new Pouch();
+        public PlayerStats Pouch { get; private set; } = new PlayerStats();
 
         /// <summary>
         /// The information about the mod.
         /// </summary>
-        public InfinitePit ModInfo { get; private set; } = new InfinitePit();
+        public InfinitePitStats ModInfo { get; private set; } = new InfinitePitStats();
 
         // Small buffers used for reading small data.
         private readonly byte[] _smallbuf = new byte[8];
@@ -60,13 +49,8 @@ namespace Celani.TTYD.Randomizer.Tracker
         /// </summary>
         public void Update()
         {
-            // Read the pouch memory.
-            Game.Read(PouchAddress, Pouch.Data);
-            Pouch.Data.AsSpan().Reverse();
-
-            // Read the ModData.
-            Game.Read(ModStateAddress, ModInfo.Data);
-            ModInfo.Data.AsSpan().Reverse();
+            Pouch.Read(Game);
+            ModInfo.Read(Game);
 
             // Read the tick.
             Game.Read(FrameRetraceAddress, _tickbuff);
@@ -81,7 +65,7 @@ namespace Celani.TTYD.Randomizer.Tracker
         {
             // Read the filename.
             Game.Read(FileNameAddress, _smallbuf);
-            FileName = Encoding.ASCII.GetString(_smallbuf).Replace('?', '♡');
+            FileName = Encoding.ASCII.GetString(_smallbuf).Replace('?', '♡').Trim('\0');
         }
     }
 }

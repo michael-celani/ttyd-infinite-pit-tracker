@@ -9,9 +9,9 @@ namespace Celani.TTYD.Randomizer.API.Models
     {
         public string FileName { get; set; }
 
-        public Pouch PouchData { get; set; }
+        public PlayerStats PouchData { get; set; }
 
-        public InfinitePit ModData { get; set; }
+        public InfinitePitStats ModData { get; set; }
 
         [JsonConverter(typeof(TimeSpanConverter))]
         public TimeSpan PitRunElapsed { get; set; }

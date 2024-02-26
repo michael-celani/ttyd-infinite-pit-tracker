@@ -1,11 +1,9 @@
-﻿using Celani.TTYD.Randomizer.API;
-using Celani.TTYD.Randomizer.API.Filters;
+﻿using Celani.TTYD.Randomizer.API.Filters;
 using Celani.TTYD.Randomizer.API.Models;
 using Celani.TTYD.Randomizer.Tracker;
 using Celani.TTYD.Randomizer.Tracker.Dolphin;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Primitives;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -39,11 +37,31 @@ namespace Celani.TTYD.Randomizer.UI.Controllers
             // Accept the websocket.
             using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
 
+            var flags = new PitRunFlags();
             var run = new PitRun();
-            Task sendTask = SendPouchDataAsync(tracker, webSocket, run);
+            
+            run.OnPitStart += (sender, args) =>
+            {
+                tracker.UpdateFilename();
+                flags.ShouldWrite = false;
+            };
+
+            run.OnPitReset += (sender, args) =>
+            {
+                tracker.UpdateFilename();
+                flags.ShouldWrite = false;
+            };
+
+            run.OnPitFinish += (sender, args) =>
+            {
+                flags.ShouldWrite = true;
+            };
+
+            Task sendTask = SendPouchDataAsync(tracker, webSocket, run, flags);
             Task heartbeatTask = RecieveHeartbeatAsync(webSocket);
-            await Task.WhenAny(sendTask, heartbeatTask).ConfigureAwait(false);
+            await Task.WhenAny(sendTask, heartbeatTask);
         }
+
 
         private static void GetData(ThousandYearDoorTracker tracker, PitRun run, MemoryStream stream)
         {
@@ -51,34 +69,10 @@ namespace Celani.TTYD.Randomizer.UI.Controllers
             tracker.Update();
 
             DateTime runStart = GamecubeGame.DateTimeFromGCNTick(tracker.ModInfo.PitStartTime);
-            DateTime now = GamecubeGame.DateTimeFromGCNTick(tracker.Tick);
+            DateTime now = GamecubeGame.DateTimeFromGCNTick(tracker.ModInfo.PitFinished ? tracker.ModInfo.PitEndTime : tracker.Tick);
             TimeSpan runElapsed = now - runStart;
 
-            if (!run.IsStarted && tracker.ModInfo.PitStartTime != 0)
-            {
-                // The pit is not started, but just began.
-                run.IsStarted = true;
-                run.CurrentFloor = tracker.ModInfo.Floor;
-                run.CurrentFloorStart = GamecubeGame.DateTimeFromGCNTick(tracker.Tick);
-                tracker.UpdateFilename();
-            }
-            else if (run.IsStarted && tracker.ModInfo.PitStartTime == 0)
-            {
-                // The pit was started, but just ended.
-                run.IsStarted = false;
-                run.CurrentFloor = 0;
-                run.CurrentFloorStart = null;
-                tracker.UpdateFilename();
-            }
-
-            TimeSpan floorElapsed = run.CurrentFloorStart.HasValue ? now - run.CurrentFloorStart.Value : TimeSpan.Zero;
-
-            if (tracker.ModInfo.Floor != run.CurrentFloor)
-            {
-                // The floor has changed.
-                run.CurrentFloor = tracker.ModInfo.Floor;
-                run.CurrentFloorStart = now;
-            }
+            run.Update(tracker.Pouch, tracker.ModInfo, now);
 
             var sentData = new SentData
             {
@@ -86,14 +80,14 @@ namespace Celani.TTYD.Randomizer.UI.Controllers
                 PouchData = tracker.Pouch,
                 ModData = tracker.ModInfo,
                 PitRunElapsed = runElapsed,
-                FloorRunElapsed = floorElapsed,
+                FloorRunElapsed = run.GetFloorElapsed(now),
             };
 
             // Send the data.
             JsonSerializer.Serialize(stream, sentData);
         }
 
-        private static async Task SendPouchDataAsync(ThousandYearDoorTracker tracker, WebSocket webSocket, PitRun run)
+        private static async Task SendPouchDataAsync(ThousandYearDoorTracker tracker, WebSocket webSocket, PitRun run, PitRunFlags flags)
         {
             MemoryStream stream = new();
 
@@ -107,13 +101,26 @@ namespace Celani.TTYD.Randomizer.UI.Controllers
                 if (stream.Position != 0)
                 {
                     var memory = stream.GetBuffer().AsMemory()[0..(Index) stream.Position];
-                    await webSocket.SendAsync(memory, WebSocketMessageType.Text, true, CancellationToken.None).ConfigureAwait(false);
+                    await webSocket.SendAsync(memory, WebSocketMessageType.Text, true, CancellationToken.None);
                 }
                 
                 stream.Seek(0, SeekOrigin.Begin);
+
+                if (flags.ShouldWrite)
+                {
+                    flags.ShouldWrite = false;
+                    await WriteRunDataAsync(run);
+                }
                 
-                await timeTask.ConfigureAwait(false);
+                await timeTask;
             }
+        }
+
+        private static async Task WriteRunDataAsync(PitRun run)
+        {
+            var fileName = @$"pitrun-{DateTime.Now:yyyy-MM-dd-hh-mm-ss-ffff}.json";
+            using FileStream stream = System.IO.File.Create(fileName);
+            await JsonSerializer.SerializeAsync(stream, run);
         }
 
         private static async Task RecieveHeartbeatAsync(WebSocket webSocket)
@@ -126,11 +133,11 @@ namespace Celani.TTYD.Randomizer.UI.Controllers
                 source.CancelAfter(HeartbeatPeriod);
 
                 // Receive a heartbeat.
-                var result = await webSocket.ReceiveAsync(reciveBuffer.AsMemory(), source.Token).ConfigureAwait(false);
+                var result = await webSocket.ReceiveAsync(reciveBuffer.AsMemory(), source.Token);
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None).ConfigureAwait(false);
+                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
                 }
             }
         }

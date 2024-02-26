@@ -17,7 +17,7 @@ namespace Celani.TTYD.Randomizer.Tracker.Dolphin
         /// <summary>
         /// The base address for Gamecube games.
         /// </summary>
-        public static readonly long BaseAddressGC = 0x80000000;
+        public const long BaseAddressGC = 0x80000000;
 
         /// <summary>
         /// The basic information about the mapped MEM1 memory.
@@ -32,7 +32,7 @@ namespace Celani.TTYD.Randomizer.Tracker.Dolphin
         /// <summary>
         /// The number of GameCube ticks in a millisecond.
         /// </summary>
-        private static ulong TicksPerMillisecond { get; set; } = 40500;
+        private const ulong TicksPerMillisecond = 40500;
 
         /// <summary>
         /// A regular expression that validates game codes.
