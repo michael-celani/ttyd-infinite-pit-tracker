@@ -19,7 +19,7 @@ namespace Celani.TTYD.Randomizer.API.Converters
                 return;
             }
 
-            var val = $@"{value.TotalHours:00}:{value:mm\:ss\.ff}";
+            var val = $@"{(int) value.TotalHours}:{value:mm\:ss\.ff}";
             writer.WriteStringValue(val);
         }
     }
