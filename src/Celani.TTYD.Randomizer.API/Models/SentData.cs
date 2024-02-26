@@ -5,18 +5,18 @@ using System.Text.Json.Serialization;
 
 namespace Celani.TTYD.Randomizer.API.Models
 {
-    public class SentData
+    public class SentData(PitRun run)
     {
-        public string FileName { get; set; }
+        public string FileName => run.Data.FileName;
 
-        public PlayerStats PouchData { get; set; }
+        public PlayerStats PouchData => run.Data.Pouch;
 
-        public InfinitePitStats ModData { get; set; }
-
-        [JsonConverter(typeof(TimeSpanConverter))]
-        public TimeSpan PitRunElapsed { get; set; }
+        public InfinitePitStats ModData => run.Data.ModInfo;
 
         [JsonConverter(typeof(TimeSpanConverter))]
-        public TimeSpan FloorRunElapsed { get; set; }
+        public TimeSpan PitRunElapsed => run.GetRunElapsed();
+
+        [JsonConverter(typeof(TimeSpanConverter))]
+        public TimeSpan FloorRunElapsed => run.GetFloorElapsed();
     }
 }

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Celani.TTYD.Randomizer.Tracker
 {
-    public class ThousandYearDoorTracker(GamecubeGame game)
+    public class ThousandYearDoorDataReader(GamecubeGame game)
     {
         /// <summary>
         /// The Gamecube Game.

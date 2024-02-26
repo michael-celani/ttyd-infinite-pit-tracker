@@ -1,5 +1,6 @@
 ﻿using Celani.TTYD.Randomizer.API.Converters;
 using Celani.TTYD.Randomizer.Tracker;
+using Celani.TTYD.Randomizer.Tracker.Dolphin;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -7,33 +8,56 @@ using System.Text.Json.Serialization;
 namespace Celani.TTYD.Randomizer.API.Models
 {
     /// <summary>
-    /// Information about a currently active Pit run.
+    /// A wrapper around ThousandYearDoorDataReader that tracks the state of the Pit of 100 Trials.
     /// </summary>
     [JsonConverter(typeof(PitRunConverter))]
-    public class PitRun
+    public class PitRun(ThousandYearDoorDataReader data)
     {
-        public bool InGame { get; set; }
+        public bool InGame => RunStart.HasValue;
 
         public bool IsFinished { get; set; }
 
         public int CurrentFloor { get; set; } = -1;
 
+        public DateTime? RunStart { get; set; }
+
         public DateTime? CurrentFloorStart { get; set; }
+
+        public DateTime Now { get; set; }
 
         public List<FloorSnapshot> FloorSnapshots { get; set; } = [];
 
+        /// <summary>
+        /// Event that is raised when a run starts.
+        /// </summary>
         public event EventHandler OnPitStart;
 
+        /// <summary>
+        /// Event that is raised when a run is reset.
+        /// </summary>
         public event EventHandler OnPitReset;
 
+        /// <summary>
+        /// Event that is raised when a run is finished.
+        /// </summary>
         public event EventHandler OnPitFinish;
 
         /// <summary>
-        /// Calculates how much time has elapsed on the current floor from the given <seealso cref="TimeSpan"/>.
+        /// The data reader for the game.
         /// </summary>
-        /// <param name="now">The current time.</param>
-        /// <returns>The amount of time elapsed on the current floor.</returns>
-        public TimeSpan GetFloorElapsed(DateTime now) => !CurrentFloorStart.HasValue ? TimeSpan.Zero : now - CurrentFloorStart.Value;
+        public ThousandYearDoorDataReader Data { get; set; } = data; 
+        
+        /// <summary>
+        /// Calculates the elapsed time since the start of the run.
+        /// </summary>
+        /// <returns>The elapsed time as a TimeSpan.</returns>
+        public TimeSpan GetRunElapsed() => !RunStart.HasValue ? TimeSpan.Zero : Now - RunStart.Value;
+
+        /// <summary>
+        /// Calculates the elapsed time since the start of the current floor.
+        /// </summary>
+        /// <returns>The elapsed time as a TimeSpan.</returns>
+        public TimeSpan GetFloorElapsed() => !CurrentFloorStart.HasValue ? TimeSpan.Zero : Now - CurrentFloorStart.Value;
 
         private void OnRaisePitStart()
         {
@@ -65,12 +89,24 @@ namespace Celani.TTYD.Randomizer.API.Models
             }
         }
 
-        public void Update(PlayerStats playerInfo, InfinitePitStats modInfo, DateTime now)
+        /// <summary>
+        /// Updates the state of the Pit of 100 Trials.
+        /// </summary>
+        public void Update()
         {
-            // The pit is not running.
-            if (modInfo.PitStartTime == 0)
+            Data.Update();
+
+            Now = GamecubeGame.DateTimeFromGCNTick(
+                Data.ModInfo.PitFinished ? 
+                Data.ModInfo.PitEndTime : 
+                Data.Tick
+            );
+
+            // The pit is not running in the game.
+            if (Data.ModInfo.PitStartTime == 0)
             {
-                // The pit was started, but just ended.
+                // The pit was reset: we think that the pit
+                // is running, but the game does not.
                 if (InGame)
                 {
                     Reset();
@@ -81,28 +117,30 @@ namespace Celani.TTYD.Randomizer.API.Models
             }
 
             // The floor has updated.
-            if (modInfo.Floor != CurrentFloor)
+            if (Data.ModInfo.Floor != CurrentFloor)
             {
+                // A file was loaded: the game is running the
+                // pit, but we think it's stopped.
                 if (!InGame)
                 {
-                    // The game has started.
-                    InGame = true;
+                    Start();
                     OnRaisePitStart();
                 }
-                else if (!IsFinished)
+                else
                 {
-                    Snapshot(playerInfo, modInfo, now);
+                    // We actually changed floors, snapshot the previous one:
+                    Snapshot();
                 }
 
-                CurrentFloor = modInfo.Floor;
-                CurrentFloorStart = now;
+                CurrentFloor = Data.ModInfo.Floor;
+                CurrentFloorStart = Now;
             }
 
-            // The run has finished.
-            if (!IsFinished && modInfo.PitFinished)
+            // The run has finished by reading the sign.
+            if (!IsFinished && Data.ModInfo.PitFinished)
             {
-                IsFinished = modInfo.PitFinished;
-                Snapshot(playerInfo, modInfo, now);
+                Finish();
+                Snapshot();
                 OnRaisePitFinish();
             }
         }
@@ -110,29 +148,38 @@ namespace Celani.TTYD.Randomizer.API.Models
         /// <summary>
         /// Snapshots the current floor.
         /// </summary>
-        /// <param name="playerInfo">The pouch.</param>
-        /// <param name="modInfo">The mod info.</param>
-        /// <param name="now">The current time.</param>
-        private void Snapshot(PlayerStats playerInfo, InfinitePitStats modInfo, DateTime now)
+        private void Snapshot()
         {
             var snapshot = new FloorSnapshot
             {
                 Floor = CurrentFloor,
-                FloorDuration = GetFloorElapsed(now),
-                FloorEndPouch = new PlayerStats(playerInfo),
-                FloorEndStats = new InfinitePitStats(modInfo)
+                FloorDuration = GetFloorElapsed(),
+                FloorEndPouch = new PlayerStats(Data.Pouch),
+                FloorEndStats = new InfinitePitStats(Data.ModInfo)
             };
 
             FloorSnapshots.Add(snapshot);
         }
 
+        private void Start()
+        {
+            RunStart = GamecubeGame.DateTimeFromGCNTick(Data.ModInfo.PitStartTime);
+            Data.UpdateFilename();
+        }
+
         public void Reset()
         {
-            InGame = false;
             IsFinished = false;
+            RunStart = null;
             CurrentFloor = -1;
             CurrentFloorStart = null;
             FloorSnapshots.Clear();
+            Data.UpdateFilename();
+        }
+
+        public void Finish()
+        {
+            IsFinished = true;
         }
     }
 }
