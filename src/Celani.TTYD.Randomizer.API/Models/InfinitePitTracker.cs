@@ -14,8 +14,6 @@ namespace Celani.TTYD.Randomizer.API.Models
     {
         private static readonly TimeSpan WaitTime = TimeSpan.FromMilliseconds(100.0 / 6.0);
 
-        private static readonly TimeSpan HeartbeatPeriod = TimeSpan.FromSeconds(5);
-
         public PitRun Run { get; set;} = new(ConnectDolphin());
 
         public bool ShouldWrite { get; set; } = false;
