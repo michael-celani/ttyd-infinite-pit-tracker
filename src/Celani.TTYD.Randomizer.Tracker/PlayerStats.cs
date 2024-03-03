@@ -4,9 +4,6 @@ using System.Text.Json.Serialization;
 
 namespace Celani.TTYD.Randomizer.Tracker
 {
-    /// <summary>
-    /// Represents Mario's party and inventory.
-    /// </summary>
     public class PlayerStats
     {
         /// <summary>
@@ -14,8 +11,26 @@ namespace Celani.TTYD.Randomizer.Tracker
         /// </summary>
         public byte[] Data { get; } = new byte[Marshal.SizeOf<PouchData>()];
 
+        private Memory<short> Badges => MemoryMarshal.Cast<byte, short>(Data.AsMemory(0, 400).Span);
+
+        public PlayerStats()
+        {
+
+        }
+    }
+
+    /// <summary>
+    /// Represents Mario's party and inventory.
+    /// </summary>
+    public class PlayerStatsSlim
+    {
+        /// <summary>
+        /// The backing store for the pouch.
+        /// </summary>
+        public byte[] Data { get; } = new byte[Marshal.SizeOf<PouchData>()];
+
         [JsonPropertyName("party_data")]
-        public PartyMember[] Party { get; } = new PartyMember[8];
+        public PartyMemberSlim[] Party { get; } = new PartyMemberSlim[8];
 
         [JsonPropertyName("coins")]
         public short Coins
@@ -100,7 +115,7 @@ namespace Celani.TTYD.Randomizer.Tracker
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ref PouchData GetPouchData() => ref MemoryMarshal.AsRef<PouchData>(Data);
 
-        public PlayerStats()
+        public PlayerStatsSlim()
         {
             var pouchSize = Marshal.SizeOf<PouchData>();
             var partySize = Marshal.SizeOf<PouchPartyMember>();
@@ -110,12 +125,12 @@ namespace Celani.TTYD.Randomizer.Tracker
             for (var i = 0; i < 8; i++)
             {
                 var memorySlice = memory.Slice(partyStart, partySize);
-                Party[i] = new PartyMember(memorySlice);
+                Party[i] = new PartyMemberSlim(memorySlice);
                 partyStart += partySize;
             }
         }
 
-        public PlayerStats(PlayerStats other) : this()
+        public PlayerStatsSlim(PlayerStatsSlim other) : this()
         {
             var dataSpan = Data.AsSpan();
             other.Data.CopyTo(dataSpan);

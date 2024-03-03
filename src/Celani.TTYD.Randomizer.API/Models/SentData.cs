@@ -9,7 +9,7 @@ namespace Celani.TTYD.Randomizer.API.Models
     {
         public string FileName => run.Data.FileName;
 
-        public PlayerStats PouchData => run.Data.Pouch;
+        public PlayerStatsSlim PouchData => run.Data.Pouch;
 
         public InfinitePitStats ModData => run.Data.ModInfo;
 

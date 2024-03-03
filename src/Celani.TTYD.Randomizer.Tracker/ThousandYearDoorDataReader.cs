@@ -48,7 +48,7 @@ namespace Celani.TTYD.Randomizer.Tracker
         /// <summary>
         /// The pouch, which represents party data.
         /// </summary>
-        public PlayerStats Pouch { get; private set; } = new PlayerStats();
+        public PlayerStatsSlim Pouch { get; private set; } = new PlayerStatsSlim();
 
         /// <summary>
         /// The information about the mod.
