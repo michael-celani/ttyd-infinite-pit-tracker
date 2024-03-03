@@ -4,10 +4,126 @@ using System.Text.Json.Serialization;
 
 namespace Celani.TTYD.Randomizer.Tracker
 {
+    public class InfinitePitStats
+    {
+        [JsonIgnore]
+        public Memory<byte> Data { get; }
+
+        [JsonPropertyName("play_stats")]
+        public InfinitePitPlayStats PlayStats { get; }
+
+        [JsonPropertyName("last_save_time")]
+        public ulong LastSaveTime => MemoryMarshal.AsRef<ulong>(Data.Span[112..120]);
+
+        [JsonPropertyName("pit_start_time")]
+        public ulong PitStartTime => MemoryMarshal.AsRef<ulong>(Data.Span[120..128]);
+
+        [JsonPropertyName("star_power_levels")]
+        public ushort StarPowerLevels => MemoryMarshal.AsRef<ushort>(Data.Span[190..192]);
+
+        [JsonPropertyName("reward_flags")]
+        public uint RewardFlags => MemoryMarshal.AsRef<uint>(Data.Span[192..196]);
+
+        [JsonPropertyName("floor")]
+        public uint Floor => MemoryMarshal.AsRef<uint>(Data.Span[196..200]);
+
+        public InfinitePitStats(Memory<byte> data)
+        {
+            if (data.Length != 208)
+                throw new ArgumentException("Data must be 208 bytes long.", nameof(data));
+
+            Data = data;
+            PlayStats = new(Data[0..64]);
+        }
+    }
+
+    public class InfinitePitPlayStats
+    {
+        [JsonIgnore]
+        public Memory<byte> Data { get; }
+
+        [JsonPropertyName("total_turns")]
+        public uint TotalTurns => ReadThree(Data.Span[61..64]);
+
+        [JsonPropertyName("maximum_turns")]
+        public ushort MaximumTurns => MemoryMarshal.AsRef<ushort>(Data.Span[59..61]);
+
+        [JsonPropertyName("current_turns")]
+        public ushort CurrentTurns => MemoryMarshal.AsRef<ushort>(Data.Span[57..59]);
+
+        [JsonPropertyName("maximum_turns_floor")]
+        public uint MaximumTurnsFloor => MemoryMarshal.AsRef<uint>(Data.Span[53..57]);
+
+        [JsonPropertyName("times_ran_away")]
+        public ushort TimesRanAway => MemoryMarshal.AsRef<ushort>(Data.Span[51..53]);
+
+        [JsonPropertyName("enemy_damage")]
+        public uint EnemyDamage => ReadThree(Data.Span[48..51]);
+
+        [JsonPropertyName("player_damage")]
+        public uint PlayerDamage => ReadThree(Data.Span[45..48]);
+
+        [JsonPropertyName("items_used")]
+        public uint ItemsUsed => ReadThree(Data.Span[42..45]);
+
+        [JsonPropertyName("coins_earned")]
+        public uint CoinsEarned => ReadThree(Data.Span[39..42]);
+
+        [JsonPropertyName("coins_spent")]
+        public uint CoinsSpent => ReadThree(Data.Span[36..39]);
+
+        [JsonPropertyName("fp_spent")]
+        public uint FlowerPointsSpent => ReadThree(Data.Span[33..36]);
+
+        [JsonPropertyName("sp_spent")]
+        public uint StarPointsSpent => ReadThree(Data.Span[30..33]);
+
+        [JsonPropertyName("superguards")]
+        public uint Superguards => ReadThree(Data.Span[27..30]);
+
+        [JsonPropertyName("items_sold")]
+        public uint ItemsSold => ReadThree(Data.Span[24..27]);
+
+        [JsonPropertyName("badges_sold")]
+        public uint BadgesSold => ReadThree(Data.Span[21..24]);
+
+        [JsonPropertyName("levels_sold")]
+        public ushort LevelsSold => MemoryMarshal.AsRef<ushort>(Data.Span[19..21]);
+
+        [JsonPropertyName("shine_sprites")]
+        public ushort ShineSprites => MemoryMarshal.AsRef<ushort>(Data.Span[17..19]);
+
+        [JsonPropertyName("conditions_met")]
+        public uint ConditionsMet => ReadThree(Data.Span[14..17]);
+
+        [JsonPropertyName("conditions_total")]
+        public uint ConditionsTotal => ReadThree(Data.Span[11..14]);
+
+        [JsonPropertyName("movers_used")]
+        public ushort MoversUsed => MemoryMarshal.AsRef<ushort>(Data.Span[9..11]);
+
+        [JsonPropertyName("battles_skipped")]
+        public uint BattlesSkipped => ReadThree(Data.Span[6..9]);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static uint ReadThree(ReadOnlySpan<byte> buffer)
+        {
+            return (uint)(MemoryMarshal.AsRef<ushort>(buffer[0..2]) | (buffer[2] << 16));
+        }
+
+        public InfinitePitPlayStats(Memory<byte> data)
+        {
+            if (data.Length != 64)
+                throw new ArgumentException("Data must be 64 bytes long.", nameof(data));
+
+            Data = data;
+        }
+    }
+
     /// <summary>
     /// Represents additional data kept by Infinite Pit.
     /// </summary>
-    public class InfinitePitStats
+    public class InfinitePitStatsSlim
     {
         public byte[] Data { get; } = new byte[Marshal.SizeOf<ModData>()];
 
@@ -274,9 +390,9 @@ namespace Celani.TTYD.Randomizer.Tracker
             return (uint)(MemoryMarshal.Read<ushort>(buffer[0..2]) | (buffer[2] << 16));
         }
 
-        public InfinitePitStats() { }
+        public InfinitePitStatsSlim() { }
 
-        public InfinitePitStats(InfinitePitStats other) : this()
+        public InfinitePitStatsSlim(InfinitePitStatsSlim other) : this()
         {
             var dataSpan = Data.AsSpan();
             other.Data.CopyTo(dataSpan);

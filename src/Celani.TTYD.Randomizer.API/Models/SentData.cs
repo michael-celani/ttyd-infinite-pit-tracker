@@ -11,7 +11,7 @@ namespace Celani.TTYD.Randomizer.API.Models
 
         public PlayerStatsSlim PouchData => run.Data.Pouch;
 
-        public InfinitePitStats ModData => run.Data.ModInfo;
+        public InfinitePitStatsSlim ModData => run.Data.ModInfo;
 
         [JsonConverter(typeof(TimeSpanConverter))]
         public TimeSpan PitRunElapsed => run.GetRunElapsed();

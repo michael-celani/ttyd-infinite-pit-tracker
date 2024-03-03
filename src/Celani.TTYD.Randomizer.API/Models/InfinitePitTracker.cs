@@ -13,18 +13,15 @@ namespace Celani.TTYD.Randomizer.API.Models
     {
         private static readonly TimeSpan WaitTime = TimeSpan.FromMilliseconds(100.0 / 6.0);
 
-
         public static async Task TrackAsync(GamecubeGame game, WebSocket webSocket)
         {
             var sendTask = SendAsync(game, webSocket);
             var recvTask = ReceiveAsync(webSocket);
-
             await Task.WhenAny(sendTask, recvTask);
         }
 
         public static async Task SendAsync(GamecubeGame game, WebSocket webSocket)
         {
-
             var data = new ThousandYearDoorDataReader(game);
             var run = new PitRun(data);
 

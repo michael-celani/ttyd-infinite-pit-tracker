@@ -160,7 +160,7 @@ namespace Celani.TTYD.Randomizer.API.Models
                 Floor = CurrentFloor,
                 FloorDuration = GetFloorElapsed(),
                 FloorEndPouch = new PlayerStatsSlim(Data.Pouch),
-                FloorEndStats = new InfinitePitStats(Data.ModInfo)
+                FloorEndStats = new InfinitePitStatsSlim(Data.ModInfo)
             };
 
             FloorSnapshots.Add(snapshot);

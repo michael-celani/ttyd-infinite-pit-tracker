@@ -9,7 +9,7 @@ namespace Celani.TTYD.Randomizer.API.Models
 
         public PlayerStatsSlim FloorEndPouch { get; init; }
 
-        public InfinitePitStats FloorEndStats { get; init; }
+        public InfinitePitStatsSlim FloorEndStats { get; init; }
 
         public TimeSpan FloorDuration { get; init; }
     }

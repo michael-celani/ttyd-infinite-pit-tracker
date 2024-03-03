@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Celani.TTYD.Randomizer.Trac
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Celani.TTYD.Randomizer.API", "Celani.TTYD.Randomizer.API\Celani.TTYD.Randomizer.API.csproj", "{13ED5516-8893-4054-B249-8D4C8D411A2C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Celani.TTYD.Randomizer.Stats", "Celani.TTYD.Randomizer.Stats\Celani.TTYD.Randomizer.Stats.csproj", "{4F408B30-3430-42FC-A3A3-6BFB37BBD0A8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{13ED5516-8893-4054-B249-8D4C8D411A2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13ED5516-8893-4054-B249-8D4C8D411A2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13ED5516-8893-4054-B249-8D4C8D411A2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F408B30-3430-42FC-A3A3-6BFB37BBD0A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F408B30-3430-42FC-A3A3-6BFB37BBD0A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F408B30-3430-42FC-A3A3-6BFB37BBD0A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F408B30-3430-42FC-A3A3-6BFB37BBD0A8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

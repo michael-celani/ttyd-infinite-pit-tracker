@@ -53,7 +53,7 @@ namespace Celani.TTYD.Randomizer.Tracker
         /// <summary>
         /// The information about the mod.
         /// </summary>
-        public InfinitePitStats ModInfo { get; private set; } = new InfinitePitStats();
+        public InfinitePitStatsSlim ModInfo { get; private set; } = new InfinitePitStatsSlim();
 
         // Small buffers used for reading small data.
         private readonly byte[] _smallbuf = new byte[8];
