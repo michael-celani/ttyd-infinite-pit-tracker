@@ -1,5 +1,4 @@
-﻿using Celani.TTYD.Randomizer.Tracker.Dolphin;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 
@@ -14,11 +13,6 @@ namespace Celani.TTYD.Randomizer.Tracker
         /// The backing store for the pouch.
         /// </summary>
         public byte[] Data { get; } = new byte[Marshal.SizeOf<PouchData>()];
-
-        /// <summary>
-        /// The address of the pouch in TTYD memory.
-        /// </summary>
-        private const long PouchAddress = 0x80b07b60;
 
         [JsonPropertyName("party_data")]
         public PartyMember[] Party { get; } = new PartyMember[8];
@@ -105,13 +99,6 @@ namespace Celani.TTYD.Randomizer.Tracker
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ref PouchData GetPouchData() => ref MemoryMarshal.AsRef<PouchData>(Data);
-
-        public void Read(GamecubeGame game)
-        {
-            // Read the ModData.
-            game.Read(PouchAddress, Data);
-            Data.AsSpan().Reverse();
-        }
 
         public PlayerStats()
         {

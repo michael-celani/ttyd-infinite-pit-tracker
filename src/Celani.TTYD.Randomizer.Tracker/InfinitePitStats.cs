@@ -1,5 +1,4 @@
-﻿using Celani.TTYD.Randomizer.Tracker.Dolphin;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 
@@ -12,17 +11,7 @@ namespace Celani.TTYD.Randomizer.Tracker
     {
         public byte[] Data { get; } = new byte[Marshal.SizeOf<ModData>()];
 
-        private byte[] TimeData { get; } = new byte[Marshal.SizeOf<FinalTimeData>()];
-
-        /// <summary>
-        /// The address of the mod state in TTYD memory.
-        /// </summary>
-        private const long ModStateAddress = 0x80b56aa0;
-
-        /// <summary>
-        /// The address of the RTA final time.
-        /// </summary>
-        private const long FinalTimeAddress = 0x80b56538;
+        public byte[] TimeData { get; } = new byte[Marshal.SizeOf<FinalTimeData>()];
 
         [JsonPropertyName("floor")]
         public int Floor
@@ -278,16 +267,6 @@ namespace Celani.TTYD.Randomizer.Tracker
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ref FinalTimeData GetTimeData() => ref MemoryMarshal.AsRef<FinalTimeData>(TimeData);
-
-        public void Read(GamecubeGame game)
-        {
-            // Read the ModData.
-            game.Read(ModStateAddress, Data);
-            Data.AsSpan().Reverse();
-
-            game.Read(FinalTimeAddress, TimeData);
-            TimeData.AsSpan().Reverse();
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint ReadThree(ReadOnlySpan<byte> buffer)

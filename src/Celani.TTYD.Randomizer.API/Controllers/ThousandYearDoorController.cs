@@ -1,8 +1,9 @@
 ﻿using Celani.TTYD.Randomizer.API.Filters;
 using Celani.TTYD.Randomizer.API.Models;
+using Celani.TTYD.Randomizer.Tracker.Dolphin;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Celani.TTYD.Randomizer.UI.Controllers
@@ -16,13 +17,15 @@ namespace Celani.TTYD.Randomizer.UI.Controllers
         [WebsocketsOnlyFilter]
         public async Task GetPouch()
         {
-            InfinitePitTracker tracker;
+            Process[] dolphinProcess = Process.GetProcessesByName("dolphin");
 
-            try
+            if (dolphinProcess.Length == 0)
             {
-                tracker = new InfinitePitTracker();
+                HttpContext.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                return;
             }
-            catch (InvalidOperationException)
+
+            if (!GamecubeGame.TryAttach(dolphinProcess[0], out var game))
             {
                 HttpContext.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
                 return;
@@ -31,7 +34,7 @@ namespace Celani.TTYD.Randomizer.UI.Controllers
             // Accept the websocket.
             using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
 
-            await tracker.TrackAsync(webSocket);
+            await InfinitePitTracker.TrackAsync(game, webSocket);
         }
     }
 }

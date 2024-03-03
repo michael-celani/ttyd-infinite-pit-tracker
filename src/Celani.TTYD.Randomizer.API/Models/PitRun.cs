@@ -92,9 +92,12 @@ namespace Celani.TTYD.Randomizer.API.Models
         /// <summary>
         /// Updates the state of the Pit of 100 Trials.
         /// </summary>
-        public void Update()
+        public bool Update()
         {
-            Data.Update();
+            if (!Data.Update())
+            {
+                return false;
+            }
 
             Now = GamecubeGame.DateTimeFromGCNTick(
                 Data.ModInfo.PitFinished ? 
@@ -113,7 +116,7 @@ namespace Celani.TTYD.Randomizer.API.Models
                     OnRaisePitReset();
                 }
 
-                return;
+                return true;
             }
 
             // The floor has updated.
@@ -143,6 +146,8 @@ namespace Celani.TTYD.Randomizer.API.Models
                 Snapshot();
                 OnRaisePitFinish();
             }
+
+            return true;
         }
 
         /// <summary>

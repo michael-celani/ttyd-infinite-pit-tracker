@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Net.WebSockets;
 using System.Text.Json;
@@ -10,40 +9,30 @@ using Celani.TTYD.Randomizer.Tracker.Dolphin;
 
 namespace Celani.TTYD.Randomizer.API.Models
 {
-    public class InfinitePitTracker
+    public static class InfinitePitTracker
     {
         private static readonly TimeSpan WaitTime = TimeSpan.FromMilliseconds(100.0 / 6.0);
 
-        private static readonly TimeSpan HeartbeatPeriod = TimeSpan.FromSeconds(5);
 
-        public PitRun Run { get; set;} = new(ConnectDolphin());
-
-        public bool ShouldWrite { get; set; } = false;
-
-        public InfinitePitTracker()
+        public static async Task TrackAsync(GamecubeGame game, WebSocket webSocket)
         {
-            Run.OnPitStart += (sender, args) => ShouldWrite = false;
-            Run.OnPitReset += (sender, args) => ShouldWrite = false;
-            Run.OnPitFinish += (sender, args) => ShouldWrite = true;
+            var sendTask = SendAsync(game, webSocket);
+            var recvTask = ReceiveAsync(webSocket);
+
+            await Task.WhenAny(sendTask, recvTask);
         }
 
-        public async Task TrackAsync(WebSocket socket) => await SendPouchDataAsync(socket);
-
-        private static ThousandYearDoorDataReader ConnectDolphin()
+        public static async Task SendAsync(GamecubeGame game, WebSocket webSocket)
         {
-            Process[] dolphinProcess = Process.GetProcessesByName("dolphin");
 
-            if (dolphinProcess.Length == 0)
-            {
-                throw new InvalidOperationException("Dolphin is not running.");
-            }
+            var data = new ThousandYearDoorDataReader(game);
+            var run = new PitRun(data);
 
-            var game = GamecubeGame.Create(dolphinProcess[0]);
-            return new(game);
-        }
+            var shouldWrite = false;
+            run.OnPitStart  += (sender, args) => shouldWrite = false;
+            run.OnPitReset  += (sender, args) => shouldWrite = false;
+            run.OnPitFinish += (sender, args) => shouldWrite = true;
 
-        private async Task SendPouchDataAsync(WebSocket webSocket)
-        {
             MemoryStream stream = new();
 
             while (webSocket.State == WebSocketState.Open)
@@ -51,9 +40,13 @@ namespace Celani.TTYD.Randomizer.API.Models
                 // Wait 1/60th of a second
                 Task timeTask = Task.Delay(WaitTime);
 
-                Run.Update();
+                if (!game.Running || !run.Update())
+                {
+                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "The Thousand Year Door has closed.", CancellationToken.None);
+                    return;
+                }
 
-                var sentData = new SentData(Run);
+                var sentData = new SentData(run);
 
                 JsonSerializer.Serialize(stream, sentData);
 
@@ -65,21 +58,31 @@ namespace Celani.TTYD.Randomizer.API.Models
                 
                 stream.Seek(0, SeekOrigin.Begin);
 
-                if (ShouldWrite)
+                if (shouldWrite)
                 {
-                    ShouldWrite = false;
-                    await WriteRunDataAsync();
+                    shouldWrite = false;
+                    await WriteRunDataAsync(run);
                 }
                 
                 await timeTask;
             }
         }
 
-        private async Task WriteRunDataAsync()
+        public static async Task ReceiveAsync(WebSocket webSocket)
+        {
+            var buffer = new byte[1024 * 4];
+
+            while (webSocket.State == WebSocketState.Open)
+            {
+                await webSocket.ReceiveAsync(buffer, CancellationToken.None);
+            }
+        }
+
+        private static async Task WriteRunDataAsync(PitRun run)
         {
             var fileName = @$"pitrun-{DateTime.Now:yyyy-MM-dd-hh-mm-ss-ffff}.json";
             using FileStream stream = File.Create(fileName);
-            await JsonSerializer.SerializeAsync(stream, Run);
+            await JsonSerializer.SerializeAsync(stream, run);
         }
     }
 }

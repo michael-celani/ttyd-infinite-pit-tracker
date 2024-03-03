@@ -2,6 +2,7 @@
 using Celani.TTYD.Randomizer.Tracker.Windows;
 using ProcessMemoryUtilities.Managed;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -10,14 +11,14 @@ namespace Celani.TTYD.Randomizer.Tracker.Dolphin
     public partial class GamecubeGame
     {
         /// <summary>
+        /// If the Dolphin process is running.
+        /// </summary>
+        public bool Running => !Game.HasExited;
+        
+        /// <summary>
         /// The Dolphin process.
         /// </summary>
         private Process Game { get; set; }
-
-        /// <summary>
-        /// The base address for Gamecube games.
-        /// </summary>
-        public const long BaseAddressGC = 0x80000000;
 
         /// <summary>
         /// The basic information about the mapped MEM1 memory.
@@ -28,6 +29,11 @@ namespace Celani.TTYD.Randomizer.Tracker.Dolphin
         /// The GameCube epoch, January 1 2000.
         /// </summary>
         private static DateTime Epoch { get; set; } = new DateTime(2000, 1, 1);
+
+        /// <summary>
+        /// The base address for Gamecube games.
+        /// </summary>
+        public const long BaseAddressGC = 0x80000000;
 
         /// <summary>
         /// The number of GameCube ticks in a millisecond.
@@ -47,29 +53,27 @@ namespace Celani.TTYD.Randomizer.Tracker.Dolphin
             Memory = memory;
         }
 
-        /// <summary>
-        /// Creates a new Gamecube game from a Dolphin process.
-        /// </summary>
-        /// <param name="dolphin">The Dolphin process.</param>
-        /// <returns>The GameCubeGame representing the played game.</returns>
-        /// <exception cref="InvalidOperationException">No MEM1 was found in the process.</exception>
-        public static GamecubeGame Create(Process dolphin)
+        public static bool TryAttach(Process dolphin, [NotNullWhen(true)] out GamecubeGame? game)
         {
             // Find MEM1:
-            MemoryBasicInformation? mem1 = dolphin.EnumerateVirtualMemory().Where(memory => IsGameCubeMEM1(dolphin, memory)).FirstOrDefault();
+            var mem1 = dolphin.EnumerateVirtualMemory().Where(memory => IsGameCubeMEM1(dolphin, memory)).ToList();
 
-            if (!mem1.HasValue)
-                throw new InvalidOperationException("MEM1 not found in process.");
+            if (mem1.Count == 0)
+            {
+                game = null;
+                return false;
+            }
 
-            return new GamecubeGame(dolphin, mem1.Value);
+            game = new GamecubeGame(dolphin, mem1[0]);
+            return true;
         }
 
-        public void Read(long gcAddress, byte[] buffer)
+        public bool Read(long gcAddress, byte[] buffer)
         {
             nint procAddr = ConvertToProcessAddress(gcAddress);
 
             // Read from the game:
-            NativeWrapper.ReadProcessMemoryArray(Game.Handle, procAddr, buffer);
+            return NativeWrapper.ReadProcessMemoryArray(Game.Handle, procAddr, buffer);
         }
 
         /// <summary>
