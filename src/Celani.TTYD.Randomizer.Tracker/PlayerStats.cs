@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Celani.TTYD.Randomizer.Tracker.Lookups;
+using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
@@ -14,10 +15,10 @@ namespace Celani.TTYD.Randomizer.Tracker
         public Memory<byte> Data { get; }
 
         [JsonPropertyName("equipped_badges")]
-        public BadgeView EquippedBadges { get; }
+        public ItemView EquippedBadges { get; }
 
         [JsonPropertyName("badges")]
-        public BadgeView Badges { get; }
+        public ItemView Badges { get; }
 
         [JsonPropertyName("stored_items")]
         public ItemView StoredItems { get; }
@@ -91,7 +92,11 @@ namespace Celani.TTYD.Randomizer.Tracker
         [JsonPropertyName("current_hp")]
         public short CurrentHitPoints => MemoryMarshal.AsRef<short>(Data.Span[1192..1194]);
 
-        public PartyMember[] Party { get; }
+        [JsonPropertyName("party")]
+        private Dictionary<string, PartyMember> Party { get; }
+
+        [JsonPropertyName("party")]
+        public Dictionary<string, PartyMember> UnlockedMembers => Party.Where(kvp => (kvp.Value.Flags & 1) == 1).ToDictionary();
 
         public PlayerPouch(Memory<byte> data)
         {
@@ -106,153 +111,20 @@ namespace Celani.TTYD.Randomizer.Tracker
             StoredItems = new(Data[800..864]);
             Items = new(Data[864..904]);
             KeyItems = new(Data[904..1146]);
-            Party = [
-                new PartyMember(Data[1194..1208]),
-                new PartyMember(Data[1208..1222]),
-                new PartyMember(Data[1222..1236]),
-                new PartyMember(Data[1236..1250]),
-                new PartyMember(Data[1250..1264]),
-                new PartyMember(Data[1264..1278]),
-                new PartyMember(Data[1278..1292]),
-                new PartyMember(Data[1292..1306])
-            ];
+
+            Party = new() {
+                ["goombella"] = new PartyMember(Data[1278..1292]),
+                ["koops"] = new PartyMember(Data[1264..1278]),
+                ["flurrie"] = new PartyMember(Data[1222..1236]),
+                ["yoshi"] = new PartyMember(Data[1236..1250]),
+                ["vivian"] = new PartyMember(Data[1208..1222]),
+                ["bobbery"] = new PartyMember(Data[1250..1264]),
+                ["mowz"] = new PartyMember(Data[1194..1208]),
+            };
         }
     }
 
-    public static class BadgeLookup
-    {
-        public static string GetBadgeName(short code) => code switch
-        {
-            240 => "Power Jump",
-            241 => "Multibounce",
-            242 => "Power Bounce",
-            243 => "Tornado Jump",
-            244 => "Shrink Stomp",
-            245 => "Sleepy Stomp",
-            246 => "Soft Stomp",
-            247 => "Power Smash",
-            248 => "Quake Hammer",
-            249 => "Hammer Throw",
-            250 => "Piercing Blow",
-            251 => "Head Rattle",
-            252 => "Fire Drive",
-            253 => "Ice Smash",
-            254 => "Double Dip",
-            255 => "Double Dip P",
-            256 => "Charge",
-            257 => "Charge P",
-            258 => "Super Appeal",
-            259 => "Super Appeal P",
-            260 => "Power Plus",
-            261 => "Power Plus P",
-            262 => "P-Up, D-Down",
-            263 => "P-Up, D-Down P",
-            264 => "All or Nothing",
-            265 => "All or Nothing P",
-            266 => "Mega Rush",
-            267 => "Mega Rush P",
-            268 => "Power Rush",
-            269 => "Power Rush P",
-            270 => "P-Down, D-Up",
-            271 => "P-Down, D-Up P",
-            272 => "Last Stand",
-            273 => "Last Stand P",
-            274 => "Defend Plus",
-            275 => "Defend Plus P",
-            276 => "Damage Dodge",
-            277 => "Damage Dodge P",
-            278 => "HP Plus",
-            279 => "HP Plus P",
-            280 => "FP Plus",
-            281 => "Flower Saver",
-            282 => "Flower Saver P",
-            283 => "Ice Power",
-            284 => "Spike Shield",
-            285 => "Feeling Fine",
-            286 => "Feeling Fine P",
-            287 => "Zap Tap",
-            288 => "No Pain No Gain",
-            289 => "Jumpman",
-            290 => "Hammerman",
-            291 => "Return Postage",
-            292 => "Happy Heart",
-            293 => "Happy Heart P",
-            294 => "Happy Flower",
-            295 => "HP Drain",
-            296 => "HP Drain P",
-            297 => "FP Drain",
-            298 => "FP Drain P",
-            299 => "Close Call",
-            300 => "Close Call P",
-            301 => "Pretty Lucky",
-            302 => "Pretty Lucky P",
-            303 => "Lucky Day",
-            304 => "Lucky Day P",
-            305 => "Refund",
-            306 => "Pity Flower",
-            307 => "Pity Flower P",
-            308 => "Quick Change",
-            309 => "Peekaboo",
-            310 => "Timing Tutor",
-            311 => "Heart Finder",
-            312 => "Flower Finder",
-            313 => "Money Money",
-            314 => "Item Hog",
-            315 => "Attack FX R",
-            316 => "Attack FX B",
-            317 => "Attack FX G",
-            318 => "Attack FX Y",
-            319 => "Attack FX P",
-            320 => "Chill Out",
-            321 => "First Attack",
-            322 => "Bump Attack",
-            323 => "Slow Go",
-            324 => "Simplifier",
-            325 => "Unsimplifier",
-            326 => "Lucky Start",
-            327 => "L Emblem",
-            328 => "W Emblem",
-            _ => string.Empty
-        };
-    }
-
-    public class ItemView(Memory<byte> data) : IReadOnlyList<short>
-    {
-        public Memory<byte> Data { get; } = data;
-
-        public short this[int index] 
-        { 
-            get 
-            {
-                var span = Data.Span;
-                var startIndex = index * 2;
-                var endIndex = startIndex + 2;
-                return MemoryMarshal.AsRef<short>(span[startIndex..endIndex]);
-            }
-        }
-
-        public int Count => Data.Length >> 1;
-
-        public IEnumerator<short> GetEnumerator()
-        {
-            for (var i = 0; i < Count; i++)
-            {
-                var value = this[i];
-                if (value != 0) yield return this[i];
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            for (var i = 0; i < Count; i++)
-            {
-                var value = this[i];
-                if (value != 0) yield return this[i];
-            }
-        }
-    }
-
-    public class BadgeView(Memory<byte> data) : IReadOnlyList<string>
+    public class ItemView(Memory<byte> data) : IReadOnlyList<string>
     {
         public Memory<byte> Data { get; } = data;
 
@@ -264,7 +136,7 @@ namespace Celani.TTYD.Randomizer.Tracker
                 var startIndex = index * 2;
                 var endIndex = startIndex + 2;
                 ref var code = ref MemoryMarshal.AsRef<short>(span[startIndex..endIndex]);
-                return BadgeLookup.GetBadgeName(code);
+                return NameLookup.GetItemName(code);
             }
         }
 

@@ -15,10 +15,11 @@ namespace Celani.TTYD.Randomizer.API.Converters
         public override void Write(Utf8JsonWriter writer, PitRun value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
+            writer.WriteString("seed", value.PitLog.Seed);
             writer.WritePropertyName("floors");
             writer.WriteStartArray();
 
-            foreach (var snapshot in value.FloorSnapshots)
+            foreach (var snapshot in value.PitLog.FloorSnapshots)
             {
                 writer.WriteStartObject();
                 writer.WriteNumber("floor", snapshot.Floor + 1);

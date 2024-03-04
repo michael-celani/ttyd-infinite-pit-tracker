@@ -1,22 +1,28 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Celani.TTYD.Randomizer.Tracker;
 
 
-var run = JsonSerializer.Deserialize<FullRun>(File.ReadAllText("/Users/mcelani/Downloads/pitrun-2024-02-26-07-54-12-4991.json"));
+var run = JsonSerializer.Deserialize<FullRun>(File.ReadAllText("C:\\Users\\Michael Celani\\Desktop\\pitrun-2024-03-02-10-40-47-8239.json"));
+var options = new JsonSerializerOptions { WriteIndented = true };
+
+using var file = File.OpenWrite("C:\\Users\\Michael Celani\\Desktop\\out.json");
+List<object> list = new();
 
 foreach (var floor in run.FloorSnapshots)
 {
-    var floorObj = JsonSerializer.Serialize(new {
-        floor.Floor,
-        Stats = new PlayerPouch(floor.FloorEndPouch),
-        ModInfo = new InfinitePitStats(floor.FloorEndStats),
-        Duration = TimeSpan.FromMilliseconds(floor.FloorDuration)
-    }, new JsonSerializerOptions { WriteIndented = true });
-
-    Console.WriteLine(floorObj);
+    list.Add(new
+    {
+        floor = floor.Floor,
+        stats = new PlayerPouch(floor.FloorEndPouch),
+        mod_info = new InfinitePitStats(floor.FloorEndStats),
+        duration = TimeSpan.FromMilliseconds(floor.FloorDuration)
+    });
 }
+
+JsonSerializer.Serialize(file, list, options);
 
 public class FloorSnapshot
 {

@@ -2,7 +2,6 @@
 using Celani.TTYD.Randomizer.Tracker;
 using Celani.TTYD.Randomizer.Tracker.Dolphin;
 using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Celani.TTYD.Randomizer.API.Models
@@ -25,7 +24,7 @@ namespace Celani.TTYD.Randomizer.API.Models
 
         public DateTime Now { get; set; }
 
-        public List<FloorSnapshot> FloorSnapshots { get; set; } = [];
+        public PitLog PitLog { get; set; } = new();
 
         /// <summary>
         /// Event that is raised when a run starts.
@@ -163,13 +162,14 @@ namespace Celani.TTYD.Randomizer.API.Models
                 FloorEndStats = new InfinitePitStatsSlim(Data.ModInfo)
             };
 
-            FloorSnapshots.Add(snapshot);
+            PitLog.FloorSnapshots.Add(snapshot);
         }
 
         private void Start()
         {
             RunStart = GamecubeGame.DateTimeFromGCNTick(Data.ModInfo.PitStartTime);
             Data.UpdateFilename();
+            PitLog.Seed = Data.FileName;
         }
 
         public void Reset()
@@ -178,7 +178,7 @@ namespace Celani.TTYD.Randomizer.API.Models
             RunStart = null;
             CurrentFloor = -1;
             CurrentFloorStart = null;
-            FloorSnapshots.Clear();
+            PitLog.FloorSnapshots.Clear();
             Data.UpdateFilename();
         }
 

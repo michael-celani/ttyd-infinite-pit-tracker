@@ -19,10 +19,28 @@ namespace Celani.TTYD.Randomizer.Tracker
         public ulong PitStartTime => MemoryMarshal.AsRef<ulong>(Data.Span[120..128]);
 
         [JsonPropertyName("star_power_levels")]
-        public ushort StarPowerLevels => MemoryMarshal.AsRef<ushort>(Data.Span[190..192]);
+        private ushort StarPowerLevelsBitfield => MemoryMarshal.AsRef<ushort>(Data.Span[190..192]);
 
-        [JsonPropertyName("reward_flags")]
-        public uint RewardFlags => MemoryMarshal.AsRef<uint>(Data.Span[192..196]);
+        [JsonPropertyName("star_power_levels")]
+        public Dictionary<string, int> StarPowerLevels
+        {
+            get
+            {
+                var bitField = StarPowerLevelsBitfield;
+
+                return new Dictionary<string, int>
+                {
+                    ["sweet_treat"] = bitField & 3,
+                    ["earth_tremor"] = bitField >> 2 & 3,
+                    ["clock_out"] = bitField >> 4 & 3,
+                    ["power_lift"] = bitField >> 6 & 3,
+                    ["art_attack"] = bitField >> 8 & 3,
+                    ["sweet_feast"] = bitField >> 10 & 3,
+                    ["showstopper"] = bitField >> 12 & 3,
+                    ["supernova"] = bitField >> 14 & 3,
+                };
+            }
+        }
 
         [JsonPropertyName("floor")]
         public uint Floor => MemoryMarshal.AsRef<uint>(Data.Span[196..200]);
@@ -30,7 +48,9 @@ namespace Celani.TTYD.Randomizer.Tracker
         public InfinitePitStats(Memory<byte> data)
         {
             if (data.Length != 208)
+            {
                 throw new ArgumentException("Data must be 208 bytes long.", nameof(data));
+            }
 
             Data = data;
             PlayStats = new(Data[0..64]);
@@ -57,10 +77,10 @@ namespace Celani.TTYD.Randomizer.Tracker
         [JsonPropertyName("times_ran_away")]
         public ushort TimesRanAway => MemoryMarshal.AsRef<ushort>(Data.Span[51..53]);
 
-        [JsonPropertyName("enemy_damage")]
+        [JsonPropertyName("damage_dealt")]
         public uint EnemyDamage => ReadThree(Data.Span[48..51]);
 
-        [JsonPropertyName("player_damage")]
+        [JsonPropertyName("damage_received")]
         public uint PlayerDamage => ReadThree(Data.Span[45..48]);
 
         [JsonPropertyName("items_used")]
@@ -114,8 +134,10 @@ namespace Celani.TTYD.Randomizer.Tracker
         public InfinitePitPlayStats(Memory<byte> data)
         {
             if (data.Length != 64)
+            {
                 throw new ArgumentException("Data must be 64 bytes long.", nameof(data));
-
+            }
+                
             Data = data;
         }
     }
