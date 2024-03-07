@@ -1,6 +1,5 @@
 ﻿using Celani.TTYD.Randomizer.Tracker.Lookups;
 using System.Collections;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 
@@ -169,93 +168,35 @@ namespace Celani.TTYD.Randomizer.Tracker
         /// <summary>
         /// The backing store for the pouch.
         /// </summary>
+        [JsonIgnore]
         public byte[] Data { get; } = new byte[Marshal.SizeOf<PouchData>()];
 
         [JsonPropertyName("party_data")]
         public PartyMemberSlim[] Party { get; } = new PartyMemberSlim[8];
 
         [JsonPropertyName("coins")]
-        public short Coins
-        {
-            get
-            {
-                ref var pouch = ref GetPouchData();
-                return pouch.coins;
-            }
-        }
+        public short Coins => MemoryMarshal.AsRef<short>(Data.AsSpan()[1184..1186]);
 
         [JsonPropertyName("star_points")]
-        public short StarPoints
-        {
-            get
-            {
-                ref var pouch = ref GetPouchData();
-                return pouch.star_points;
-            }
-        }
+        public short StarPoints => MemoryMarshal.AsRef<short>(Data.AsSpan()[1154..1156]);
 
         [JsonPropertyName("level")]
-        public short Level
-        {
-            get
-            {
-                ref var pouch = ref GetPouchData();
-                return pouch.level;
-            }
-        }
+        public short Level => MemoryMarshal.AsRef<short>(Data.AsSpan()[1166..1168]);
 
         [JsonPropertyName("base_max_hp")]
-        public short BaseMaxHp
-        {
-            get
-            {
-                ref var pouch = ref GetPouchData();
-                return pouch.base_max_hp;
-            }
-        }
+        public short BaseMaxHitPoints => MemoryMarshal.AsRef<short>(Data.AsSpan()[1162..1164]);
 
         [JsonPropertyName("base_max_fp")]
-        public short BaseMaxFp
-        {
-            get
-            {
-                ref var pouch = ref GetPouchData();
-                return pouch.base_max_fp;
-            }
-        }
+        public short BaseMaxFlowerPoints => MemoryMarshal.AsRef<short>(Data.AsSpan()[1160..1162]);
 
         [JsonPropertyName("total_bp")]
-        public short TotalBp
-        {
-            get
-            {
-                ref var pouch = ref GetPouchData();
-                return pouch.total_bp;
-            }
-        }
+        public short TotalBadgePoints => MemoryMarshal.AsRef<short>(Data.AsSpan()[1156..1158]);
 
         [JsonPropertyName("jump_level")]
-        public short JumpLevel
-        {
-            get
-            {
-                ref var pouch = ref GetPouchData();
-                return pouch.jump_level;
-            }
-        }
+        public byte JumpLevel => Data.AsSpan()[1153];
 
         [JsonPropertyName("hammer_level")]
-        public short HammerLevel
-        {
-            get
-            {
-                ref var pouch = ref GetPouchData();
-                return pouch.hammer_level;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ref PouchData GetPouchData() => ref MemoryMarshal.AsRef<PouchData>(Data);
+        public byte HammerLevel => Data.AsSpan()[1152];
 
         public PlayerStatsSlim()
         {

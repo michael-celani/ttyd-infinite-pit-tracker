@@ -147,8 +147,10 @@ namespace Celani.TTYD.Randomizer.Tracker
     /// </summary>
     public class InfinitePitStatsSlim
     {
+        [JsonIgnore]
         public byte[] Data { get; } = new byte[Marshal.SizeOf<ModData>()];
 
+        [JsonIgnore]
         public byte[] TimeData { get; } = new byte[Marshal.SizeOf<FinalTimeData>()];
 
         [JsonPropertyName("floor")]
