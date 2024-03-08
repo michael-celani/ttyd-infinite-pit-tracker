@@ -1,10 +1,8 @@
-﻿using Celani.TTYD.Randomizer.API.Converters;
-using Celani.TTYD.Randomizer.Tracker;
+﻿using Celani.TTYD.Randomizer.Tracker.Converters;
 using Celani.TTYD.Randomizer.Tracker.Dolphin;
-using System;
 using System.Text.Json.Serialization;
 
-namespace Celani.TTYD.Randomizer.API.Models
+namespace Celani.TTYD.Randomizer.Tracker
 {
     /// <summary>
     /// A wrapper around ThousandYearDoorDataReader that tracks the state of the Pit of 100 Trials.
@@ -29,17 +27,17 @@ namespace Celani.TTYD.Randomizer.API.Models
         /// <summary>
         /// Event that is raised when a run starts.
         /// </summary>
-        public event EventHandler OnPitStart;
+        public event EventHandler? OnPitStart;
 
         /// <summary>
         /// Event that is raised when a run is reset.
         /// </summary>
-        public event EventHandler OnPitReset;
+        public event EventHandler? OnPitReset;
 
         /// <summary>
         /// Event that is raised when a run is finished.
         /// </summary>
-        public event EventHandler OnPitFinish;
+        public event EventHandler? OnPitFinish;
 
         /// <summary>
         /// The data reader for the game.
@@ -60,7 +58,7 @@ namespace Celani.TTYD.Randomizer.API.Models
 
         private void OnRaisePitStart()
         {
-            EventHandler raiseEvent = OnPitStart;
+            EventHandler? raiseEvent = OnPitStart;
 
             if (raiseEvent is not null)
             {
@@ -70,7 +68,7 @@ namespace Celani.TTYD.Randomizer.API.Models
 
         private void OnRaisePitReset()
         {
-            EventHandler raiseEvent = OnPitReset;
+            EventHandler? raiseEvent = OnPitReset;
 
             if (raiseEvent is not null)
             {
@@ -80,7 +78,7 @@ namespace Celani.TTYD.Randomizer.API.Models
 
         private void OnRaisePitFinish()
         {
-            EventHandler raiseEvent = OnPitFinish;
+            EventHandler? raiseEvent = OnPitFinish;
 
             if (raiseEvent is not null)
             {
@@ -98,14 +96,17 @@ namespace Celani.TTYD.Randomizer.API.Models
                 return false;
             }
 
+            var modInfo = new InfinitePitStats(Data.ModInfo);
+            var timeData = new InfinitePitFinalTime(Data.TimeData);
+
             Now = GamecubeGame.DateTimeFromGCNTick(
-                Data.ModInfo.PitFinished ? 
-                Data.ModInfo.PitEndTime : 
+                timeData.PitFinished ? 
+                timeData.PitEndTime : 
                 Data.Tick
             );
 
             // The pit is not running in the game.
-            if (Data.ModInfo.PitStartTime == 0)
+            if (modInfo.PitStartTime == 0)
             {
                 // The pit was reset: we think that the pit
                 // is running, but the game does not.
@@ -119,7 +120,7 @@ namespace Celani.TTYD.Randomizer.API.Models
             }
 
             // The floor has updated.
-            if (Data.ModInfo.Floor != CurrentFloor)
+            if (modInfo.Floor != CurrentFloor)
             {
                 // A file was loaded: the game is running the
                 // pit, but we think it's stopped.
@@ -134,12 +135,12 @@ namespace Celani.TTYD.Randomizer.API.Models
                     Snapshot();
                 }
 
-                CurrentFloor = Data.ModInfo.Floor;
+                CurrentFloor = (int) modInfo.Floor;
                 CurrentFloorStart = Now;
             }
 
             // The run has finished by reading the sign.
-            if (!IsFinished && Data.ModInfo.PitFinished)
+            if (!IsFinished && timeData.PitFinished)
             {
                 Finish();
                 Snapshot();
@@ -154,12 +155,17 @@ namespace Celani.TTYD.Randomizer.API.Models
         /// </summary>
         private void Snapshot()
         {
+            Span<byte> pouch = new byte[Data.Pouch.Length];
+            Span<byte> modInfo = new byte[Data.ModInfo.Length];
+            Data.Pouch.CopyTo(pouch);
+            Data.ModInfo.CopyTo(modInfo);
+
             var snapshot = new FloorSnapshot
             {
                 Floor = CurrentFloor,
                 FloorDuration = GetFloorElapsed(),
-                FloorEndPouch = new PlayerStatsSlim(Data.Pouch),
-                FloorEndStats = new InfinitePitStatsSlim(Data.ModInfo)
+                FloorEndPouch = Data.Pouch,
+                FloorEndStats = Data.ModInfo
             };
 
             PitLog.FloorSnapshots.Add(snapshot);
@@ -167,7 +173,8 @@ namespace Celani.TTYD.Randomizer.API.Models
 
         private void Start()
         {
-            RunStart = GamecubeGame.DateTimeFromGCNTick(Data.ModInfo.PitStartTime);
+            var modInfo = new InfinitePitStats(Data.ModInfo);
+            RunStart = GamecubeGame.DateTimeFromGCNTick(modInfo.PitStartTime);
             Data.UpdateFilename();
             PitLog.Seed = Data.FileName;
         }

@@ -3,40 +3,48 @@ using System.Text.Json.Serialization;
 
 namespace Celani.TTYD.Randomizer.Tracker
 {
-    public class PartyMember(Memory<byte> Data)
+    public readonly ref struct Party(Span<byte> data)
     {
-        [JsonPropertyName("tech_level")]
-        public short TechLevel => MemoryMarshal.AsRef<short>(Data.Span[0..2]);
+        private Span<byte> Data { get; } = data;
 
-        [JsonPropertyName("attack_level")]
-        public short AttackLevel => MemoryMarshal.AsRef<short>(Data.Span[2..4]);
+        public readonly PartyMember Mowz => new(Data[0..14]);
 
-        [JsonPropertyName("hp_level")]
-        public short HpLevel => MemoryMarshal.AsRef<short>(Data.Span[4..6]);
+        public readonly PartyMember Vivian => new(Data[14..28]);
 
-        [JsonPropertyName("current_hp")]
-        public short CurrentHp => MemoryMarshal.AsRef<short>(Data.Span[6..8]);
+        public readonly PartyMember Flurrie => new(Data[28..42]);
 
-        [JsonPropertyName("base_max_hp")]
-        public short BaseMaxHp => MemoryMarshal.AsRef<short>(Data.Span[8..10]);
+        public readonly PartyMember Yoshi => new(Data[42..56]);
 
-        [JsonPropertyName("max_hp")]
-        public short MaxHp => MemoryMarshal.AsRef<short>(Data.Span[10..12]);
+        public readonly PartyMember Bobbery => new(Data[56..70]);
 
-        [JsonPropertyName("flags")]
-        public ushort Flags => MemoryMarshal.AsRef<ushort>(Data.Span[12..14]);
+        public readonly PartyMember Koops => new(Data[70..84]);
+
+        public readonly PartyMember Goombella => new(Data[84..98]);
     }
 
-    /// <summary>
-    /// Represents a party member.
-    /// </summary>
-    /// <param name="Data">Backing data for this party member.</param>
-    public class PartyMemberSlim(Memory<byte> Data)
+    public readonly ref struct PartyMember(Span<byte> data)
     {
+        private Span<byte> Data { get; } = data;
+
         [JsonPropertyName("tech_level")]
-        public short TechLevel => MemoryMarshal.AsRef<short>(Data.Span[0..2]);
+        public readonly ref short TechLevel => ref MemoryMarshal.AsRef<short>(Data[0..2]);
+
+        [JsonPropertyName("attack_level")]
+        public readonly ref short AttackLevel => ref MemoryMarshal.AsRef<short>(Data[2..4]);
+
+        [JsonPropertyName("hp_level")]
+        public readonly ref short HpLevel => ref MemoryMarshal.AsRef<short>(Data[4..6]);
+
+        [JsonPropertyName("current_hp")]
+        public readonly ref short CurrentHp => ref MemoryMarshal.AsRef<short>(Data[6..8]);
+
+        [JsonPropertyName("base_max_hp")]
+        public readonly ref short BaseMaxHp => ref MemoryMarshal.AsRef<short>(Data[8..10]);
+
+        [JsonPropertyName("max_hp")]
+        public readonly ref short MaxHp => ref MemoryMarshal.AsRef<short>(Data[10..12]);
 
         [JsonPropertyName("flags")]
-        public ushort Flags => MemoryMarshal.AsRef<ushort>(Data.Span[12..14]);
+        public readonly ref ushort Flags => ref MemoryMarshal.AsRef<ushort>(Data[12..14]);
     }
 }

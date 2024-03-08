@@ -1,46 +1,41 @@
-﻿using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using Celani.TTYD.Randomizer.Tracker;
+using Celani.TTYD.Randomizer.Tracker.Converters;
 
-
-var run = JsonSerializer.Deserialize<FullRun>(File.ReadAllText("C:\\Users\\Michael Celani\\Desktop\\pitrun-2024-03-02-10-40-47-8239.json"));
+var text = File.ReadAllText("/Users/mcelani/Downloads/pitrun-2024-02-26-07-54-12-4991.json");
+var run = JsonSerializer.Deserialize<PitLog>(text);
 var options = new JsonSerializerOptions { WriteIndented = true };
 
-using var file = File.OpenWrite("C:\\Users\\Michael Celani\\Desktop\\out.json");
+using var file = File.OpenWrite("/Users/mcelani/Desktop/out.json");
 List<object> list = new();
 
 foreach (var floor in run.FloorSnapshots)
 {
-    list.Add(new
+    list.Add(new FloorNew
     {
-        floor = floor.Floor,
-        stats = new PlayerPouch(floor.FloorEndPouch),
-        mod_info = new InfinitePitStats(floor.FloorEndStats),
-        duration = TimeSpan.FromMilliseconds(floor.FloorDuration)
+        Floor = floor.Floor,
+        FloorEndPouch = floor.FloorEndPouch,
+        FloorEndStats = floor.FloorEndStats,
+        FloorDuration = floor.FloorDuration
     });
 }
 
 JsonSerializer.Serialize(file, list, options);
 
-public class FloorSnapshot
+public class FloorNew
 {
     [JsonPropertyName("floor")]
     public int Floor { get; init; }
 
     [JsonPropertyName("pouch")]
+    [JsonConverter(typeof(PlayerStatsSlimConverter))]
     public byte[] FloorEndPouch { get; init; }
 
     [JsonPropertyName("mod_data")]
+    [JsonConverter(typeof(ModDataSlimConverter))]
     public byte[] FloorEndStats { get; init; }
 
     [JsonPropertyName("duration")]
-    public long FloorDuration { get; init; }
-}
-
-public class FullRun
-{
-    [JsonPropertyName("floors")]
-    public List<FloorSnapshot> FloorSnapshots { get; set; }
+    public TimeSpan FloorDuration { get; init; }
 }

@@ -1,4 +1,5 @@
 ﻿using Celani.TTYD.Randomizer.Tracker.Dolphin;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Celani.TTYD.Randomizer.Tracker
@@ -48,12 +49,17 @@ namespace Celani.TTYD.Randomizer.Tracker
         /// <summary>
         /// The pouch, which represents party data.
         /// </summary>
-        public PlayerStatsSlim Pouch { get; private set; } = new PlayerStatsSlim();
+        public byte[] Pouch { get; private set; } = new byte[Marshal.SizeOf<PouchData>()];
 
         /// <summary>
         /// The information about the mod.
         /// </summary>
-        public InfinitePitStatsSlim ModInfo { get; private set; } = new InfinitePitStatsSlim();
+        public byte[] ModInfo { get; private set; } = new byte[Marshal.SizeOf<ModData>()];
+
+        /// <summary>
+        /// The information about the final time.
+        /// </summary>
+        public byte[] TimeData { get; private set; } = new byte[Marshal.SizeOf<FinalTimeData>()];
 
         // Small buffers used for reading small data.
         private readonly byte[] _smallbuf = new byte[8];
@@ -70,9 +76,9 @@ namespace Celani.TTYD.Randomizer.Tracker
             }
 
             // Read the ModData.
-            if (Game.Read(PouchAddress, Pouch.Data))
+            if (Game.Read(PouchAddress, Pouch))
             {
-                Pouch.Data.AsSpan().Reverse();
+                Pouch.AsSpan().Reverse();
             }
             else
             {
@@ -80,9 +86,9 @@ namespace Celani.TTYD.Randomizer.Tracker
             }
 
             // Read the ModData.
-            if (Game.Read(ModStateAddress, ModInfo.Data))
+            if (Game.Read(ModStateAddress, ModInfo))
             {
-                ModInfo.Data.AsSpan().Reverse();
+                ModInfo.AsSpan().Reverse();
             }
             else
             {
@@ -90,9 +96,9 @@ namespace Celani.TTYD.Randomizer.Tracker
             }
 
             // Read the final time.
-            if (Game.Read(FinalTimeAddress, ModInfo.TimeData))
+            if (Game.Read(FinalTimeAddress, TimeData))
             {
-                ModInfo.TimeData.AsSpan().Reverse();
+                TimeData.AsSpan().Reverse();
             }
             else
             {

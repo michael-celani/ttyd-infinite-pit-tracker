@@ -1,5 +1,5 @@
-﻿using Celani.TTYD.Randomizer.API.Converters;
-using Celani.TTYD.Randomizer.Tracker;
+﻿using Celani.TTYD.Randomizer.Tracker;
+using Celani.TTYD.Randomizer.Tracker.Converters;
 using System;
 using System.Text.Json.Serialization;
 
@@ -9,9 +9,11 @@ namespace Celani.TTYD.Randomizer.API.Models
     {
         public string FileName => run.Data.FileName;
 
-        public PlayerStatsSlim PouchData => run.Data.Pouch;
+        [JsonConverter(typeof(PlayerStatsSlimConverter))]
+        public byte[] PouchData => run.Data.Pouch;
 
-        public InfinitePitStatsSlim ModData => run.Data.ModInfo;
+        [JsonConverter(typeof(ModDataSlimConverter))]
+        public byte[] ModData => run.Data.ModInfo;
 
         [JsonConverter(typeof(TimeSpanConverter))]
         public TimeSpan PitRunElapsed => run.GetRunElapsed();

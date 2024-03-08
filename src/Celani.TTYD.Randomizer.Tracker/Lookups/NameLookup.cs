@@ -1,6 +1,4 @@
-﻿using static System.Reflection.Metadata.BlobBuilder;
-
-namespace Celani.TTYD.Randomizer.Tracker.Lookups
+﻿namespace Celani.TTYD.Randomizer.Tracker.Lookups
 {
     public static class NameLookup
     {

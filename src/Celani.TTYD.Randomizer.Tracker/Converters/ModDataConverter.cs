@@ -1,0 +1,60 @@
+using System.Text.Json.Serialization;
+using System.Text.Json;
+
+namespace Celani.TTYD.Randomizer.Tracker.Converters
+{
+    public class ModDataConverter : JsonConverter<byte[]>
+    {
+        public override byte[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Write(Utf8JsonWriter writer, byte[] value, JsonSerializerOptions options)
+        {
+            var stats = new InfinitePitStats(value);
+
+            writer.WriteStartObject();
+            writer.WriteNumber("floor", stats.Floor);
+            writer.WriteNumber("last_save_time", stats.LastSaveTime);
+            writer.WriteNumber("pit_start_time", stats.PitStartTime);
+
+            writer.WriteStartObject("star_power_levels");
+            foreach (var kvp in stats.StarPowerLevels)
+            {
+                writer.WriteNumber(kvp.Key, kvp.Value);
+            }
+            writer.WriteEndObject();
+            
+            WritePlayStats(writer, stats.PlayStats);
+            writer.WriteEndObject();
+        }
+
+        private static void WritePlayStats(Utf8JsonWriter writer, InfinitePitPlayStats stats)
+        {
+            writer.WriteStartObject("play_stats");
+            writer.WriteNumber("total_turns", stats.TotalTurns);
+            writer.WriteNumber("maximum_turns", stats.MaximumTurns);
+            writer.WriteNumber("current_turns", stats.CurrentTurns);
+            writer.WriteNumber("maximum_turns_floor", stats.MaximumTurnsFloor);
+            writer.WriteNumber("times_ran_away", stats.TimesRanAway);
+            writer.WriteNumber("damage_dealt", stats.EnemyDamage);
+            writer.WriteNumber("damage_received", stats.PlayerDamage);
+            writer.WriteNumber("items_used", stats.ItemsUsed);
+            writer.WriteNumber("coins_earned", stats.CoinsEarned);
+            writer.WriteNumber("coins_spent", stats.CoinsSpent);
+            writer.WriteNumber("fp_spent", stats.FlowerPointsSpent);
+            writer.WriteNumber("sp_spent", stats.StarPointsSpent);
+            writer.WriteNumber("superguards", stats.Superguards);
+            writer.WriteNumber("items_sold", stats.ItemsSold);
+            writer.WriteNumber("badges_sold", stats.BadgesSold);
+            writer.WriteNumber("levels_sold", stats.LevelsSold);
+            writer.WriteNumber("shine_sprites", stats.ShineSprites);
+            writer.WriteNumber("conditions_met", stats.ConditionsMet);
+            writer.WriteNumber("conditions_total", stats.ConditionsTotal);
+            writer.WriteNumber("movers_used", stats.MoversUsed);
+            writer.WriteNumber("battles_skipped", stats.BattlesSkipped);
+            writer.WriteEndObject();
+        }
+    }
+}

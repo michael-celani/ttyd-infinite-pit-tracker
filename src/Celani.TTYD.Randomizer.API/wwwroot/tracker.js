@@ -69,14 +69,14 @@ function init() {
         document.getElementById("floor").innerHTML = "Floor " + parseInt(msg.ModData.floor + 1, 10);
         document.getElementById("floor_timer").innerHTML = msg.ModData.pit_start_time != 0 ? msg.FloorRunElapsed : "00:00:00.00";
 
-        document.getElementById("fp_used").innerHTML = msg.ModData.FlowerPointsSpent;
-        document.getElementById("sp_used").innerHTML = msg.ModData.StarPointsSpent;
-        document.getElementById("total_coins").innerHTML = msg.ModData.CoinsEarned;
-        document.getElementById("total_items").innerHTML = msg.ModData.ItemsUsed;
-        document.getElementById("conditions").innerHTML = msg.ModData.ConditionsMet;
-        document.getElementById("superguards").innerHTML = msg.ModData.Superguards;
-        document.getElementById("enemy_damage").innerHTML = msg.ModData.EnemyDamage;
-        document.getElementById("player_damage").innerHTML = msg.ModData.PlayerDamage;
+        document.getElementById("fp_used").innerHTML = msg.ModData.play_stats.fp_spent;
+        document.getElementById("sp_used").innerHTML = msg.ModData.play_stats.sp_spent;
+        document.getElementById("total_coins").innerHTML = msg.ModData.play_stats.coins_earned;
+        document.getElementById("total_items").innerHTML = msg.ModData.play_stats.items_used;
+        document.getElementById("conditions").innerHTML = msg.ModData.play_stats.conditions_met;
+        document.getElementById("superguards").innerHTML = msg.ModData.play_stats.superguards;
+        document.getElementById("enemy_damage").innerHTML = msg.ModData.play_stats.damage_dealt;
+        document.getElementById("player_damage").innerHTML = msg.ModData.play_stats.damage_received;
     }
 
     function update_party(party_member, party_data) {

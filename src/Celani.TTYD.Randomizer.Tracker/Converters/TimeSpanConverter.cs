@@ -1,13 +1,17 @@
 ﻿using System.Text.Json.Serialization;
 using System.Text.Json;
-using System;
 
-namespace Celani.TTYD.Randomizer.API.Converters
+namespace Celani.TTYD.Randomizer.Tracker.Converters
 {
     public class TimeSpanConverter : JsonConverter<TimeSpan>
     {
         public override TimeSpan Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            if (reader.TokenType == JsonTokenType.Number)
+            {
+                return TimeSpan.FromMilliseconds(reader.GetDouble());
+            }
+
             throw new NotImplementedException();
         }
 

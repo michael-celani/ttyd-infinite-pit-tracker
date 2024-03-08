@@ -1,222 +1,91 @@
-﻿using Celani.TTYD.Randomizer.Tracker.Lookups;
-using System.Collections;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 
 namespace Celani.TTYD.Randomizer.Tracker
 {
-    public class PlayerPouch
+    public readonly ref struct PlayerPouch(Span<byte> data)
     {
-        /// <summary>
-        /// The backing store for the pouch.
-        /// </summary>
-        [JsonIgnore]
-        public Memory<byte> Data { get; }
+        private Span<byte> Data { get; } = data;
 
         [JsonPropertyName("equipped_badges")]
-        public ItemView EquippedBadges { get; }
+        public readonly ItemView EquippedBadges => new(Data[0..400]);
 
         [JsonPropertyName("badges")]
-        public ItemView Badges { get; }
+        public readonly ItemView Badges => new(Data[400..800]);
 
         [JsonPropertyName("stored_items")]
-        public ItemView StoredItems { get; }
+        public readonly ItemView StoredItems => new(Data[800..864]);
 
         [JsonPropertyName("items")]
-        public ItemView Items { get; }
+        public readonly ItemView Items => new(Data[864..904]);
 
         [JsonPropertyName("key_items")]
-        public ItemView KeyItems { get; }
+        public readonly ItemView KeyItems => new(Data[904..1146]);
 
         [JsonPropertyName("power_bounce_record")]
-        public short PowerBounceRecord => MemoryMarshal.AsRef<short>(Data.Span[1146..1148]);
+        public readonly ref short PowerBounceRecord => ref MemoryMarshal.AsRef<short>(Data[1146..1148]);
 
         [JsonPropertyName("shine_sprites")]
-        public short ShineSprites => MemoryMarshal.AsRef<short>(Data.Span[1148..1150]);
+        public readonly ref short ShineSprites => ref MemoryMarshal.AsRef<short>(Data[1148..1150]);
 
         [JsonPropertyName("star_pieces")]
-        public short StarPieces => MemoryMarshal.AsRef<short>(Data.Span[1150..1152]);
+        public readonly ref short StarPieces => ref MemoryMarshal.AsRef<short>(Data[1150..1152]);
 
         [JsonPropertyName("hammer_level")]
-        public byte HammerLevel => Data.Span[1152];
+        public readonly ref byte HammerLevel => ref Data[1152];
 
         [JsonPropertyName("jump_level")]
-        public byte JumpLevel => Data.Span[1153];
+        public readonly ref byte JumpLevel => ref Data[1153];
 
         [JsonPropertyName("star_points")]
-        public short StarPoints => MemoryMarshal.AsRef<short>(Data.Span[1154..1156]);
+        public readonly ref short StarPoints => ref MemoryMarshal.AsRef<short>(Data[1154..1156]);
 
         [JsonPropertyName("total_bp")]
-        public short TotalBadgePoints => MemoryMarshal.AsRef<short>(Data.Span[1156..1158]);
+        public readonly ref short TotalBadgePoints => ref MemoryMarshal.AsRef<short>(Data[1156..1158]);
 
         [JsonPropertyName("unallocated_bp")]
-        public short UnallocatedBadgePoints => MemoryMarshal.AsRef<short>(Data.Span[1158..1160]);
+        public readonly ref short UnallocatedBadgePoints => ref MemoryMarshal.AsRef<short>(Data[1158..1160]);
 
         [JsonPropertyName("base_max_fp")]
-        public short BaseMaxFlowerPoints => MemoryMarshal.AsRef<short>(Data.Span[1160..1162]);
+        public readonly ref short BaseMaxFlowerPoints => ref MemoryMarshal.AsRef<short>(Data[1160..1162]);
 
         [JsonPropertyName("base_max_hp")]
-        public short BaseMaxHitPoints => MemoryMarshal.AsRef<short>(Data.Span[1162..1164]);
+        public readonly ref short BaseMaxHitPoints => ref MemoryMarshal.AsRef<short>(Data[1162..1164]);
 
         [JsonPropertyName("star_powers_obtained")]
-        public ushort StarPowersObtained => MemoryMarshal.AsRef<ushort>(Data.Span[1164..1166]);
+        public readonly ref ushort StarPowersObtained => ref MemoryMarshal.AsRef<ushort>(Data[1164..1166]);
 
         [JsonPropertyName("level")]
-        public short Level => MemoryMarshal.AsRef<short>(Data.Span[1166..1168]);
+        public readonly ref short Level => ref MemoryMarshal.AsRef<short>(Data[1166..1168]);
 
         [JsonPropertyName("rank")]
-        public short Rank => MemoryMarshal.AsRef<short>(Data.Span[1168..1170]);
+        public readonly ref short Rank => ref MemoryMarshal.AsRef<short>(Data[1168..1170]);
 
         [JsonPropertyName("audience_level")]
-        public float AudienceLevel => MemoryMarshal.AsRef<float>(Data.Span[1170..1174]);
+        public readonly ref float AudienceLevel => ref MemoryMarshal.AsRef<float>(Data[1170..1174]);
 
         [JsonPropertyName("max_sp")]
-        public short MaxStarPoints => MemoryMarshal.AsRef<short>(Data.Span[1180..1182]);
+        public readonly ref short MaxStarPoints => ref MemoryMarshal.AsRef<short>(Data[1180..1182]);
 
         [JsonPropertyName("current_sp")]
-        public short CurrentStarPoints => MemoryMarshal.AsRef<short>(Data.Span[1182..1184]);
+        public readonly ref short CurrentStarPoints => ref MemoryMarshal.AsRef<short>(Data[1182..1184]);
 
         [JsonPropertyName("coins")]
-        public short Coins => MemoryMarshal.AsRef<short>(Data.Span[1184..1186]);
+        public readonly ref short Coins => ref MemoryMarshal.AsRef<short>(Data[1184..1186]);
 
         [JsonPropertyName("max_fp")]
-        public short MaxFlowerPoints => MemoryMarshal.AsRef<short>(Data.Span[1186..1188]);
+        public readonly ref short MaxFlowerPoints => ref MemoryMarshal.AsRef<short>(Data[1186..1188]);
 
         [JsonPropertyName("current_fp")]
-        public short CurrentFlowerPoints => MemoryMarshal.AsRef<short>(Data.Span[1188..1190]);
+        public readonly ref short CurrentFlowerPoints => ref MemoryMarshal.AsRef<short>(Data[1188..1190]);
 
         [JsonPropertyName("max_hp")]
-        public short MaxHitPoints => MemoryMarshal.AsRef<short>(Data.Span[1190..1192]);
+        public readonly ref short MaxHitPoints => ref MemoryMarshal.AsRef<short>(Data[1190..1192]);
 
         [JsonPropertyName("current_hp")]
-        public short CurrentHitPoints => MemoryMarshal.AsRef<short>(Data.Span[1192..1194]);
+        public readonly ref short CurrentHitPoints => ref MemoryMarshal.AsRef<short>(Data[1192..1194]);
 
         [JsonPropertyName("party")]
-        private Dictionary<string, PartyMember> Party { get; }
-
-        [JsonPropertyName("party")]
-        public Dictionary<string, PartyMember> UnlockedMembers => Party.Where(kvp => (kvp.Value.Flags & 1) == 1).ToDictionary();
-
-        public PlayerPouch(Memory<byte> data)
-        {
-            if (data.Length != 1306)
-            {
-                throw new ArgumentException("Data must be 1306 bytes long.", nameof(data));
-            }
-
-            Data = data;
-            EquippedBadges = new(Data[0..400]);
-            Badges = new(Data[400..800]);
-            StoredItems = new(Data[800..864]);
-            Items = new(Data[864..904]);
-            KeyItems = new(Data[904..1146]);
-
-            Party = new() {
-                ["goombella"] = new PartyMember(Data[1278..1292]),
-                ["koops"] = new PartyMember(Data[1264..1278]),
-                ["flurrie"] = new PartyMember(Data[1222..1236]),
-                ["yoshi"] = new PartyMember(Data[1236..1250]),
-                ["vivian"] = new PartyMember(Data[1208..1222]),
-                ["bobbery"] = new PartyMember(Data[1250..1264]),
-                ["mowz"] = new PartyMember(Data[1194..1208]),
-            };
-        }
-    }
-
-    public class ItemView(Memory<byte> data) : IReadOnlyList<string>
-    {
-        public Memory<byte> Data { get; } = data;
-
-        public string this[int index] 
-        { 
-            get 
-            {
-                var span = Data.Span;
-                var startIndex = index * 2;
-                var endIndex = startIndex + 2;
-                ref var code = ref MemoryMarshal.AsRef<short>(span[startIndex..endIndex]);
-                return NameLookup.GetItemName(code);
-            }
-        }
-
-        public int Count => Data.Length >> 1;
-
-        public IEnumerator<string> GetEnumerator()
-        {
-            for (var i = 0; i < Count; i++)
-            {
-                var value = this[i];
-                if (value != string.Empty) yield return this[i];
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            for (var i = 0; i < Count; i++)
-            {
-                var value = this[i];
-                if (value != string.Empty) yield return this[i];
-            }
-        }
-    }
-
-    /// <summary>
-    /// Represents Mario's party and inventory.
-    /// </summary>
-    public class PlayerStatsSlim
-    {
-        /// <summary>
-        /// The backing store for the pouch.
-        /// </summary>
-        [JsonIgnore]
-        public byte[] Data { get; } = new byte[Marshal.SizeOf<PouchData>()];
-
-        [JsonPropertyName("party_data")]
-        public PartyMemberSlim[] Party { get; } = new PartyMemberSlim[8];
-
-        [JsonPropertyName("coins")]
-        public short Coins => MemoryMarshal.AsRef<short>(Data.AsSpan()[1184..1186]);
-
-        [JsonPropertyName("star_points")]
-        public short StarPoints => MemoryMarshal.AsRef<short>(Data.AsSpan()[1154..1156]);
-
-        [JsonPropertyName("level")]
-        public short Level => MemoryMarshal.AsRef<short>(Data.AsSpan()[1166..1168]);
-
-        [JsonPropertyName("base_max_hp")]
-        public short BaseMaxHitPoints => MemoryMarshal.AsRef<short>(Data.AsSpan()[1162..1164]);
-
-        [JsonPropertyName("base_max_fp")]
-        public short BaseMaxFlowerPoints => MemoryMarshal.AsRef<short>(Data.AsSpan()[1160..1162]);
-
-        [JsonPropertyName("total_bp")]
-        public short TotalBadgePoints => MemoryMarshal.AsRef<short>(Data.AsSpan()[1156..1158]);
-
-        [JsonPropertyName("jump_level")]
-        public byte JumpLevel => Data.AsSpan()[1153];
-
-        [JsonPropertyName("hammer_level")]
-        public byte HammerLevel => Data.AsSpan()[1152];
-
-        public PlayerStatsSlim()
-        {
-            var pouchSize = Marshal.SizeOf<PouchData>();
-            var partySize = Marshal.SizeOf<PouchPartyMember>();
-            var partyStart = pouchSize - partySize * 8;
-            var memory = Data.AsMemory();
-
-            for (var i = 0; i < 8; i++)
-            {
-                var memorySlice = memory.Slice(partyStart, partySize);
-                Party[i] = new PartyMemberSlim(memorySlice);
-                partyStart += partySize;
-            }
-        }
-
-        public PlayerStatsSlim(PlayerStatsSlim other) : this()
-        {
-            var dataSpan = Data.AsSpan();
-            other.Data.CopyTo(dataSpan);
-        }
+        public readonly Party Party => new (Data[1194..1306]);
     }
 }
