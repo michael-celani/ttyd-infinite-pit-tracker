@@ -90,7 +90,7 @@ namespace Celani.TTYD.Randomizer.Tracker.Converters
             writer.WriteEndObject();
         }
 
-        public void WriteTimeSpan(Utf8JsonWriter writer, string name, TimeSpan value)
+        private static void WriteTimeSpan(Utf8JsonWriter writer, string name, TimeSpan value)
         {
             var totalHours = value.TotalHours;
 

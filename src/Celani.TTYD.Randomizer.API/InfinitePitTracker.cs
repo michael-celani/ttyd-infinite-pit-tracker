@@ -69,7 +69,7 @@ namespace Celani.TTYD.Randomizer.API
 
         public static async Task ReceiveAsync(WebSocket webSocket)
         {
-            var buffer = new byte[1024 * 4];
+            Memory<byte> buffer = new byte[1024 * 4];
 
             while (webSocket.State == WebSocketState.Open)
             {
