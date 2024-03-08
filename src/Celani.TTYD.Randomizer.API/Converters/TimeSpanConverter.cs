@@ -28,7 +28,8 @@ namespace Celani.TTYD.Randomizer.API.Converters
             }
 
             Span<char> arr = stackalloc char[11];
-            totalHours.TryFormat(arr[0..2], out var charsWritten, "00");
+            var hoursInt = (int) totalHours;
+            hoursInt.TryFormat(arr[0..2], out var charsWritten, "00");
             value.TryFormat(arr[2..], out charsWritten, @"\:mm\:ss\.ff");
             writer.WriteStringValue(arr);
         }
