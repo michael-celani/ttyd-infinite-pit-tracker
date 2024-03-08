@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Net.WebSockets;
 using System.Text.Json;
@@ -38,11 +37,10 @@ namespace Celani.TTYD.Randomizer.API
 
             MemoryStream stream = new();
 
+            using PeriodicTimer timer = new(WaitTime);
+
             while (webSocket.State == WebSocketState.Open)
             {
-                // Wait 1/60th of a second
-                Task timeTask = Task.Delay(WaitTime);
-
                 if (!game.Running || !run.Update())
                 {
                     await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "The Thousand Year Door has closed.", CancellationToken.None);
@@ -65,7 +63,7 @@ namespace Celani.TTYD.Randomizer.API
                     await WriteRunDataAsync(run);
                 }
 
-                await timeTask;
+                await timer.WaitForNextTickAsync(CancellationToken.None);
             }
         }
 

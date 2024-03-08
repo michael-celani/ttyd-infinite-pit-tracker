@@ -1,6 +1,4 @@
-﻿using Celani.TTYD.Randomizer.Tracker.Converters;
-using Celani.TTYD.Randomizer.Tracker.Dolphin;
-using System.Text.Json.Serialization;
+﻿using Celani.TTYD.Randomizer.Tracker.Dolphin;
 
 namespace Celani.TTYD.Randomizer.Tracker
 {
