@@ -1,9 +1,10 @@
 ﻿using System.Text.Json.Serialization;
 using System.Text.Json;
+using System;
 
 namespace Celani.TTYD.Randomizer.Tracker.Converters
 {
-    public class PitRunConverter : JsonConverter<PitRun>
+    public class PitRunFileConverter : JsonConverter<PitRun>
     {
         public override PitRun Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {

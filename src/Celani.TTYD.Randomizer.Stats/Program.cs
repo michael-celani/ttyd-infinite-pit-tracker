@@ -29,11 +29,11 @@ public class FloorNew
     public int Floor { get; init; }
 
     [JsonPropertyName("pouch")]
-    [JsonConverter(typeof(PlayerStatsSlimConverter))]
+    [JsonConverter(typeof(PlayerStatsConverter))]
     public byte[] FloorEndPouch { get; init; }
 
     [JsonPropertyName("mod_data")]
-    [JsonConverter(typeof(ModDataSlimConverter))]
+    [JsonConverter(typeof(ModDataConverter))]
     public byte[] FloorEndStats { get; init; }
 
     [JsonPropertyName("duration")]

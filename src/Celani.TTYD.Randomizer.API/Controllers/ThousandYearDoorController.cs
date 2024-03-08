@@ -1,5 +1,5 @@
-﻿using Celani.TTYD.Randomizer.API.Filters;
-using Celani.TTYD.Randomizer.API.Models;
+﻿using Celani.TTYD.Randomizer.API;
+using Celani.TTYD.Randomizer.API.Filters;
 using Celani.TTYD.Randomizer.Tracker.Dolphin;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +10,7 @@ namespace Celani.TTYD.Randomizer.UI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class ThousandYearDoorController() : ControllerBase
+    public class ThousandYearDoorController : ControllerBase
     {
         [Route("/pouch")]
         [ValidateOriginFilter]

@@ -6,16 +6,16 @@ namespace Celani.TTYD.Randomizer.Tracker
     public class FloorSnapshot
     {
         [JsonPropertyName("floor")]
-        public int Floor { get; init; }
+        public required int Floor { get; init; }
 
         [JsonPropertyName("pouch")]
-        public byte[] FloorEndPouch { get; init; }
+        public required byte[] FloorEndPouch { get; init; }
 
         [JsonPropertyName("mod_data")]
-        public byte[] FloorEndStats { get; init; }
+        public required byte[] FloorEndStats { get; init; }
 
         [JsonPropertyName("duration")]
         [JsonConverter(typeof(TimeSpanConverter))]
-        public TimeSpan FloorDuration { get; init; }
+        public required TimeSpan FloorDuration { get; init; }
     }
 }

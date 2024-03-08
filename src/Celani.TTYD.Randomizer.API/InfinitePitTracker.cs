@@ -1,17 +1,23 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.WebSockets;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Celani.TTYD.Randomizer.Tracker;
+using Celani.TTYD.Randomizer.Tracker.Converters;
 using Celani.TTYD.Randomizer.Tracker.Dolphin;
 
-namespace Celani.TTYD.Randomizer.API.Models
+namespace Celani.TTYD.Randomizer.API
 {
     public static class InfinitePitTracker
     {
         private static readonly TimeSpan WaitTime = TimeSpan.FromMilliseconds(100.0 / 6.0);
+
+        private static readonly JsonSerializerOptions FileOptions = GetFileOptions();
+
+        private static readonly JsonSerializerOptions TrackerOptions = GetTrackerOptions();
 
         public static async Task TrackAsync(GamecubeGame game, WebSocket webSocket)
         {
@@ -26,8 +32,8 @@ namespace Celani.TTYD.Randomizer.API.Models
             var run = new PitRun(data);
 
             var shouldWrite = false;
-            run.OnPitStart  += (sender, args) => shouldWrite = false;
-            run.OnPitReset  += (sender, args) => shouldWrite = false;
+            run.OnPitStart += (sender, args) => shouldWrite = false;
+            run.OnPitReset += (sender, args) => shouldWrite = false;
             run.OnPitFinish += (sender, args) => shouldWrite = true;
 
             MemoryStream stream = new();
@@ -43,16 +49,14 @@ namespace Celani.TTYD.Randomizer.API.Models
                     return;
                 }
 
-                var sentData = new SentData(run);
-
-                JsonSerializer.Serialize(stream, sentData);
+                JsonSerializer.Serialize(stream, run, TrackerOptions);
 
                 if (stream.Position != 0)
                 {
-                    var memory = stream.GetBuffer().AsMemory()[0..(Index) stream.Position];
+                    var memory = stream.GetBuffer().AsMemory()[0..(Index)stream.Position];
                     await webSocket.SendAsync(memory, WebSocketMessageType.Text, true, CancellationToken.None);
                 }
-                
+
                 stream.Seek(0, SeekOrigin.Begin);
 
                 if (shouldWrite)
@@ -60,7 +64,7 @@ namespace Celani.TTYD.Randomizer.API.Models
                     shouldWrite = false;
                     await WriteRunDataAsync(run);
                 }
-                
+
                 await timeTask;
             }
         }
@@ -79,7 +83,23 @@ namespace Celani.TTYD.Randomizer.API.Models
         {
             var fileName = @$"pitrun-{DateTime.Now:yyyy-MM-dd-hh-mm-ss-ffff}.json";
             using FileStream stream = File.Create(fileName);
-            await JsonSerializer.SerializeAsync(stream, run);
+            await JsonSerializer.SerializeAsync(stream, run, FileOptions);
+        }
+
+        private static JsonSerializerOptions GetFileOptions()
+        {
+            var options = new JsonSerializerOptions();
+            options.Converters.Add(new PitRunFileConverter());
+
+            return options;
+        }
+
+        private static JsonSerializerOptions GetTrackerOptions()
+        {
+            var options = new JsonSerializerOptions();
+            options.Converters.Add(new PitRunTrackerConverter());
+
+            return options;
         }
     }
 }

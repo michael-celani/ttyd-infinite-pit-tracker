@@ -7,7 +7,6 @@ namespace Celani.TTYD.Randomizer.Tracker
     /// <summary>
     /// A wrapper around ThousandYearDoorDataReader that tracks the state of the Pit of 100 Trials.
     /// </summary>
-    [JsonConverter(typeof(PitRunConverter))]
     public class PitRun(ThousandYearDoorDataReader data)
     {
         public bool InGame => RunStart.HasValue;
@@ -155,17 +154,17 @@ namespace Celani.TTYD.Randomizer.Tracker
         /// </summary>
         private void Snapshot()
         {
-            Span<byte> pouch = new byte[Data.Pouch.Length];
-            Span<byte> modInfo = new byte[Data.ModInfo.Length];
-            Data.Pouch.CopyTo(pouch);
-            Data.ModInfo.CopyTo(modInfo);
+            byte[] pouch = new byte[Data.Pouch.Length];
+            byte[] modInfo = new byte[Data.ModInfo.Length];
+            Data.Pouch.AsSpan().CopyTo(pouch);
+            Data.ModInfo.AsSpan().CopyTo(modInfo);
 
             var snapshot = new FloorSnapshot
             {
                 Floor = CurrentFloor,
                 FloorDuration = GetFloorElapsed(),
-                FloorEndPouch = Data.Pouch,
-                FloorEndStats = Data.ModInfo
+                FloorEndPouch = pouch,
+                FloorEndStats = modInfo
             };
 
             PitLog.FloorSnapshots.Add(snapshot);
